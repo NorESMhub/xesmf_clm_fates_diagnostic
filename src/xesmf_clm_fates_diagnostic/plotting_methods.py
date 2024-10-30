@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 import xesmf
 
-def make_bias_plot(bias,figname,yminv,ymaxv,cmap = 'RdYlBu'):
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu'):
     # Use viridis for absolute maps
     fig = plt.figure(figsize=(10, 5))
     # Create a GeoAxes with the PlateCarree projection
@@ -13,7 +13,10 @@ def make_bias_plot(bias,figname,yminv,ymaxv,cmap = 'RdYlBu'):
     ax = plt.axes(projection=ccrs.Robinson())
     
     # Plot the data on the map
-    bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)
+    if (yminv is None) or (ymaxv is None):
+        bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+    else:
+        bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)        
     ax.set_title('')
     ax.set_title(figname)
     ax.set_xlabel('')
@@ -61,7 +64,7 @@ def make_se_regridder(weight_file):
     # output variable shape
     out_shape = weights.dst_grid_dims.load().data.tolist()[::-1]
 
-    print(in_shape, out_shape)
+    #print(in_shape, out_shape)
 
     dummy_in = xr.Dataset(
         {
@@ -87,7 +90,7 @@ def make_se_regridder(weight_file):
     return regridder
 
 def regrid_se_data(regridder, data_to_regrid):
-    print(data_to_regrid.dims)
+    #print(data_to_regrid.dims)
     if isinstance(data_to_regrid, xr.DataArray):
         print(type(data_to_regrid))
         updated = data_to_regrid.copy().transpose(..., "lndgrid").expand_dims("dummy", axis=-2)

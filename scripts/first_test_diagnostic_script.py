@@ -12,3 +12,4 @@ diagnostic = XesmfCLMFatesDiagnostics(
     )
 
 print(diagnostic.find_case_year_range())
+diagnostic.make_all_plots_and_tables()
