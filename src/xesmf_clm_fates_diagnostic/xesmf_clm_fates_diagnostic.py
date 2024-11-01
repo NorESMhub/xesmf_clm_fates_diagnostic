@@ -125,14 +125,12 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Handle different year_range
         if year_range is None:
             year_range = self.get_year_range()
-        """
         outd = self.get_annual_data(year_range)
 
         self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
         for season in range(4):
             outd = self.get_seasonal_data(season, year_range)
             self.plot_all_the_variables_on_map(outd, year_range, plottype=SEASONS[season])
-        """
         for varsetname, varset in VARSETS_TS.items():
             self.make_all_regional_timeseries(year_range, varset, varsetname)
 
@@ -143,27 +141,57 @@ class XesmfCLMFatesDiagnostics:
             year_range = np.arange(max(year_start, year_end - 10), year_end +1)
         return year_range
     
-    def make_timeseries_plots_for_varlist(self, outd, varlist, regioninfo, figname):
-        fig, axs = plt.subplots(ncols=2, nrows=int(np.ceil(len(varlist)/2)))
+    def make_timeseries_plots_for_varlist(self, outd, varlist, region_df, year_range_string, varsetname):
+        figs = []
+        for i in range(region_df.shape[0]):
+            fig, axs = plt.subplots(ncols=2, nrows=int(np.ceil(len(varlist)/2)))
+            figs.append([fig,axs])
         for varnum, var in enumerate(varlist):
             outd_regr = regrid_se_data(self.regridder, outd[var])
-            weights = np.cos(np.deg2rad(outd_regr.lat))
-            weighted_data = outd_regr.weighted(weights)
-            ts_data = weighted_data.mean(["lon", "lat"])
-            axs[varnum//2, varnum%2].plot(range(12), ts_data)
-            axs[varnum//2, varnum%2].set_xticks(ticks = range(12), labels = MONTHS)
-            axs[varnum//2, varnum%2].set_title(var)
+            for region, region_info in region_df.iterrows():
+                crop = outd_regr.sel(
+                    lat=slice(region_info["BOX_S"],region_info["BOX_N"]), 
+                    lon=slice(region_info["BOX_W"],region_info["BOX_E"])
+                )
+                weights = np.cos(np.deg2rad(crop.lat))
+                weighted_data = crop.weighted(weights)
+                ts_data = weighted_data.mean(["lon", "lat"])
+                figs[region][1][varnum//2, varnum%2].plot(range(12), ts_data)
+                figs[region][1][varnum//2, varnum%2].set_xticks(ticks = range(12), labels = MONTHS)
+                figs[region][1][varnum//2, varnum%2].set_title(var)
+                #print(ts_data)
+                #figs[region][1][varnum//2, varnum%2].set_ylabel(ts_data.unit)
             # TODO set unit on y-axis
-        fig.suptitle(f"{regioninfo[0]}, ({regioninfo[1]}) (yrs {regioninfo[2]})")
-        plt.savefig(f"figs/{figname}.png")
+        for region, region_info in region_df.iterrows():
+            figs[region][0].suptitle(f"{region_info["PTITSTR"]}, ({region_info["BOXSTR"]}) (yrs {year_range_string})")
+            figs[region][0].tight_layout()
+            figs[region][0].savefig(f"figs/{self.casename}_{varsetname}_{region_info["PTITSTR"]}.png")
 
     def make_all_regional_timeseries(self, year_range, varlist, varsetname):
+        if self.region_def:
+            region_ds = xr.open_dataset(self.region_def)
+            region_df = region_ds.to_dataframe()
+            region_df = region_df.reindex(index=region_df.index[::-1])#, inplace=True)
+            region_df = region_df.astype({"PTITSTR": str, "BOXSTR": str})
+            print(region_df)
+            print(region_df.shape)
+        else:
+            region_df = pd.Dataset(
+                data = {"BOX_S":-100.,
+                        "BOX_N": 100.,
+                        "BOX_W": -200.,
+                        "BOX_E": 200., 
+                        "PS_ID": 'Global', 
+                        "PTITSTR":'Global', 
+                        "BOXSTR": '(90S-90N,180W-180E)'}
+                        )
         outd = self.get_monthly_climatology_data(year_range=year_range, varlist= varlist)
         self.make_timeseries_plots_for_varlist(
             outd, 
-            varlist=varlist, 
-            regioninfo=["Global", "global", f"{year_range[0]}-{year_range[1]}"], 
-            figname=f"{self.casename}_{varsetname}_global"
+            varlist=varlist,
+            region_df = region_df,
+            year_range_string=f"{year_range[0]}-{year_range[1]}", 
+            varsetname=varsetname
             )
         # TODO: Fix this
         """
