@@ -63,7 +63,7 @@ if len(glob.glob(f"{run_path}/*.nc")) < 1:
 
 run_dict = read_optional_arguments(sys.argv[2:])
 print(f"All set, setting up to run diagnostics on {run_path} using options:")
-print({run_dict})
+print(run_dict)
 
 diagnostic = XesmfCLMFatesDiagnostics(
     # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",
