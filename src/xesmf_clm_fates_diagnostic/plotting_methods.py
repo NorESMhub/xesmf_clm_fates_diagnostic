@@ -4,7 +4,6 @@ import numpy as np
 import xarray as xr
 import xesmf
 
-MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
 
 def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu',ax = None):
     # Use viridis for absolute maps
@@ -23,7 +22,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu',ax = None)
     else:
         bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)        
     ax.set_title('')
-    ax.set_title(figname)
+    ax.set_title(figname.split("/")[-1])
     ax.set_xlabel('')
     ax.set_ylabel('')
     ax.set_xticklabels([])
@@ -32,7 +31,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu',ax = None)
     
     # Show the plot
     if print_to_file:
-        fignamefull='figs/'+figname+'.png'
+        fignamefull=figname+'.png'
         plt.savefig(fignamefull,bbox_inches='tight')
 
 def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu'):
@@ -46,7 +45,7 @@ def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap =
     # Plot the data on the map
     filled_c = ax.contourf(longxy, latixy, bias, cmap=cmap, transform=ccrs.PlateCarree(), vmin=yminv, vmax=ymaxv)
     ax.set_title('')
-    ax.set_title(figname)
+    ax.set_title(figname.split("/")[-1])
     ax.set_xlabel('')
     ax.set_ylabel('')
     ax.set_xticklabels([])
@@ -55,7 +54,7 @@ def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap =
     fig.colorbar(filled_c, vmin=yminv, vmax=ymaxv)
     
     # Show the plot
-    fignamefull='figs/'+figname+'.png'
+    fignamefull=figname+'.png'
     plt.savefig(fignamefull,bbox_inches='tight')
 
     
@@ -107,3 +106,4 @@ def regrid_se_data(regridder, data_to_regrid):
         )
     regridded = regridder(updated.rename({"dummy": "lat", "lndgrid": "lon"}))
     return regridded
+
