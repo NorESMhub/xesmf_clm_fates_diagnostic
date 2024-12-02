@@ -12,7 +12,7 @@ In order to use the tool you need to load and ESMF module and build an xesmf-con
 
 To run navigate to the folder called scripts (or extend paths for run-scripts to include the full path to that folder in the following commands) and run: 
 ```
-bash setup.sh
+. setup.sh
 ```
 Then run 
 ```
