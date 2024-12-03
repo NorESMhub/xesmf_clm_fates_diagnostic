@@ -15,6 +15,8 @@ diagnostic = XesmfCLMFatesDiagnostics(
 )
 
 print(diagnostic.find_case_year_range())
+#diagnostic.make_global_yearly_trends()
+#sys.exit(4)
 diagnostic.make_all_plots_and_tables()
 
 comparison_files = "/nird/datalake/NS9560K/noresm3/cases/n1850.ne30_tn14.hybrid_clmbgc.202401004/lnd/hist/"

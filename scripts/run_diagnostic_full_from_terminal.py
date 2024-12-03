@@ -43,6 +43,9 @@ def read_optional_arguments(arguments):
                 run_dict[arg_key] = arg_val
         else:
             print(f"Argument {arg} is not a valid argument and will be ignored")
+        if not os.path.exists(run_dict["outpath"]):
+            print(f"Output path {run_dict["outpath"]} must exist")
+            print_help_message()
     return run_dict
 
 # Making sure there is a run_path argument

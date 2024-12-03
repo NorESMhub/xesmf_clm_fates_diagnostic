@@ -250,8 +250,54 @@ class XesmfCLMFatesDiagnostics:
                     outd = xr.concat([outd, outd_here], dim="time")
         outd = outd.mean(dim="time")
         return outd
+    
+    def get_annual_mean_ts(self, year_range, varlist=None):
+        """
+        Get annual mean data for variables in varlist
+
+        Parameters
+        ----------
+        year_range : range
+            Of years to include
+        varlist : list
+            List of variables to get data for, if not supplied, the objects
+            varlist will be used. If the list includes variables not in the 
+            outputfiles, they will be 
+        """
+        outd = None
+        if varlist is None:
+            varlist = self.varlist
+        for year in year_range:
+            outd_yr = None
+            for month in range(12):                         
+                mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist]
+                # print(outd_here)
+                # sys.exit(4)
+                if not outd_yr:
+                    outd_yr = outd_here
+                else:
+                    outd_yr = xr.concat([outd_yr, outd_here], dim="time")
+            outd_yr = outd_yr.mean(dim="time")
+            if not outd:
+                outd = outd_yr
+            else: 
+                outd = xr.concat([outd, outd_yr], dim="time")
+        return outd
 
     def plot_all_the_variables_on_map(self, outd, year_range, plottype):
+        """
+        Plot maps of all variables in varlist
+
+        Parameters
+        ----------
+        outd : xr.Dataset
+            Dataset on native grid, with single timestep
+        year_range : np.ndarray
+            Range of years this is the mean of, to annotate plot
+        plottype : str
+            Name of plottype to annotate the plot
+        """
         for var in self.varlist:
             if var in outd.keys():
                 to_plot = regrid_se_data(self.regridder, outd[var])
@@ -263,6 +309,25 @@ class XesmfCLMFatesDiagnostics:
                 )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
+        """
+        Get climatological mean data for a season
+
+        Parameters
+        ----------
+        season : int
+            The season-number 0 is DJF, 1 is MAM, 2 is JJA
+            and 3 is SON
+        year_range : np.ndarray
+            Range of years to include in climatological mean
+        varlist : list
+            List of variables to make plots of
+
+        Returns
+        -------
+        xr.Dataset
+            Of climatological seasonal means of the variables in varlist
+            for the season requested
+        """
         outd = None
         if varlist is None:
             varlist = self.varlist
@@ -311,6 +376,8 @@ class XesmfCLMFatesDiagnostics:
 
     def make_all_plots_and_tables(self, year_range=None):
         # TODO: Handle different year_range
+        self.make_global_yearly_trends(year_range)
+
         if year_range is None:
             year_range = self.get_year_range()
         outd = self.get_annual_data(year_range)
@@ -358,11 +425,11 @@ class XesmfCLMFatesDiagnostics:
             # TODO set unit on y-axis
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
-                f"{region_info["PTITSTR"]}, ({region_info["BOXSTR"]}) (yrs {year_range_string})"
+                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
             )
             figs[region][0].tight_layout()
             figs[region][0].savefig(
-                f"{self.outdir}{self.casename}_{varsetname}_{region_info["PTITSTR"]}.png"
+                f"{self.outdir}{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
             )
 
     def make_all_regional_timeseries(self, year_range, varlist, varsetname):
@@ -392,12 +459,56 @@ class XesmfCLMFatesDiagnostics:
             outd,
             varlist=varlist,
             region_df=region_df,
-            year_range_string=f"{year_range[0]}-{year_range[1]}",
+            year_range_string=f"{year_range[0]}-{year_range[-1]}",
             varsetname=varsetname,
         )
 
-    def make_global_yearly_trends(self):
-        pass
+    def make_global_yearly_trends(self, varlist = None, year_range = None):
+        if varlist is None:
+            varlist = self.varlist
+        if year_range is not None:
+            yr_start = year_range[0]
+            yr_end = year_range[1]
+        else:
+            yr_start, yr_end, missing = self.find_case_year_range()
+            year_range =np.arange(yr_start, yr_end + 1)
+        if yr_end == yr_start:
+            print("Can not make global annual trend plots from just one year of data")
+            return
+   
+        ts_data = np.zeros((len(varlist), len(year_range)))
+        weights = None
+        
+        if not missing:
+            outd = self.get_annual_mean_ts(year_range, varlist=varlist)
+            for varnum, var in enumerate(varlist):
+                outd_regr = regrid_se_data(self.regridder, outd[var])
+                if weights is None:
+                    weights = np.cos(np.deg2rad(outd_regr.lat))
+                weighted = outd_regr.weighted(weights)
+                if len(outd_regr.values.shape) > 3:
+                    ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values[:,0]
+                else: 
+                    ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values
+        fig_count = 0
+        fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
+        #fig.suptitle("Global annual trends")
+        for varnum, var in enumerate(varlist):
+            if varnum%25 == 0 and varnum > 0:
+                fig.tight_layout()
+                fig.savefig(f"{self.outdir}{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+                plt.clf()
+                fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
+                fig_count = fig_count + 1
+            axs[(varnum%25)//5, (varnum%25)%5].plot(year_range, ts_data[varnum, :])
+            axs[(varnum%25)//5, (varnum%25)%5].set_title(var, size=30)
+            axs[(varnum%25)//5, (varnum%25)%5].set_xlabel("Year", size=25)
+        fig.tight_layout()
+        fig.savefig(f"{self.outdir}{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+        plt.clf()
+        return        
+        #for year in find_case_year_range(self):
+
 
     def make_table_diagnostics(self):
         pass
