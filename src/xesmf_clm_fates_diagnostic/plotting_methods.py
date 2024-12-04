@@ -5,7 +5,7 @@ import xarray as xr
 import xesmf
 
 
-def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu',ax = None):
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = None):
     # Use viridis for absolute maps
     print_to_file = False
     if ax is None:
@@ -34,7 +34,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu',ax = None)
         fignamefull=figname+'.png'
         plt.savefig(fignamefull,bbox_inches='tight')
 
-def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu'):
+def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu_r'):
     # Use viridis for absolute maps
     fig = plt.figure(figsize=(10, 5))
     # Create a GeoAxes with the PlateCarree projection
