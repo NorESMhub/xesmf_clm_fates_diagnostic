@@ -546,25 +546,26 @@ class XesmfCLMFatesDiagnostics:
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
+            year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             make_bias_plot(
                 to_plot,
-                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[-1]})",
+                f"{self.outdir}{self.casename} (yrs {year_range_str})",
                 ax=axs[0],
             )
             make_bias_plot(
                 to_plot_other,
-                f"{self.outdir}{other.casename} (yrs {year_range[0]}-{year_range[-1]})",
+                f"{self.outdir}{other.casename} (yrs {year_range_str})",
                 ax=axs[1],
             )
             make_bias_plot(
                 to_plot - to_plot_other,
-                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[-1]})",
+                f"{self.outdir}{self.casename} (yrs {year_range_str})",
                 ax=axs[2],
             )
             # TODO: include units?
             fig.suptitle(f"{season_name} {var}")
             fig.savefig(
-                f"{self.outdir}{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}.png"
+                f"{self.outdir}{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
 
     def find_case_year_range(self):
