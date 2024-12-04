@@ -10,7 +10,7 @@ standard_run_dict = {
     "weight" : "/projects/NS9188K/NORESM_INTERIM_TEMP/map_files/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
     "outpath" : "figs/",
     "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.xml",
-    "comparison": None
+    "compare": None
 }
 
 def print_help_message():
@@ -44,7 +44,7 @@ def read_optional_arguments(arguments):
         else:
             print(f"Argument {arg} is not a valid argument and will be ignored")
         if not os.path.exists(run_dict["outpath"]):
-            print(f"Output path {run_dict["outpath"]} must exist")
+            print(f"Output path {run_dict['outpath']} must exist")
             print_help_message()
     return run_dict
 
