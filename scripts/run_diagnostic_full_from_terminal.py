@@ -80,16 +80,16 @@ print("Standard diagnostics:")
 print(diagnostic.find_case_year_range())
 diagnostic.make_all_plots_and_tables()
 
-if run_dict["comparison"] is None:
+if run_dict["compare"] is None:
     print(f"Done, output should be in {run_dict['outpath']}")
 else:
-    print(f"Comparison diagnostics with {run_dict['comparison_files']}")
+    print(f"Comparison diagnostics with {run_dict['compare']}")
     compare_variables = ["TSA", "RAIN", "SNOW", "FSR", "FSDS"]
 
     diasgnostic_other = XesmfCLMFatesDiagnostics(
         # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",
         # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
-        run_dict['comparison_files'],
+        run_dict['compare'],
         run_dict["weight"],
         varlist=compare_variables,
     )
