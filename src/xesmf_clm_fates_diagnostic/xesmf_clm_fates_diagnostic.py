@@ -210,7 +210,8 @@ class XesmfCLMFatesDiagnostics:
             self.outdir = outdir
     
     def setup_folder_structure(self):
-        if not os.path.exists(outdir)
+        if not os.path.exists(self.outdir):
+            print("Problem")
 
     def get_clm_h0_filelist(self):
         """
