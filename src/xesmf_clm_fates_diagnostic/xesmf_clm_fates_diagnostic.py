@@ -208,7 +208,9 @@ class XesmfCLMFatesDiagnostics:
             self.outdir = "figs/"
         else:
             self.outdir = outdir
-
+    
+    def setup_folder_structure(self):
+        if not os.path.exists(outdir)
 
     def get_clm_h0_filelist(self):
         """
@@ -546,17 +548,17 @@ class XesmfCLMFatesDiagnostics:
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
             make_bias_plot(
                 to_plot,
-                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[1]})",
+                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[-1]})",
                 ax=axs[0],
             )
             make_bias_plot(
                 to_plot_other,
-                f"{self.outdir}{other.casename} (yrs {year_range[0]}-{year_range[1]})",
+                f"{self.outdir}{other.casename} (yrs {year_range[0]}-{year_range[-1]})",
                 ax=axs[1],
             )
             make_bias_plot(
                 to_plot - to_plot_other,
-                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[1]})",
+                f"{self.outdir}{self.casename} (yrs {year_range[0]}-{year_range[-1]})",
                 ax=axs[2],
             )
             # TODO: include units?
