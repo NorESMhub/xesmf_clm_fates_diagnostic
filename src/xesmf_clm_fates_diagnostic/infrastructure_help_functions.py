@@ -32,9 +32,23 @@ def clean_empty_folders_in_tree(root):
     return empty_below
 
 def read_pam_file(pam_file_path):
-    with open(pam_file_path, "r") as jsonfile:
-        data = json.load(jsonfile)
-    print(data)
+    required = {"VAR_LIST_MAIN": list, "SEASONAL_VARSETS":dict, "COMPARE_VARIABLES":list}
+    try:
+        with open(pam_file_path, "r") as jsonfile:
+            data = json.load(jsonfile)
+    except json.decoder.JSONDecodeError as err:
+        print(inst)
+        print(f"{pam_file_path} must be a valid json-file")
+        sys.exit(4)
+    if not isinstance(data, dict):
+        raise ValueError(f"{pam_file_path} must evaluate to dict")
+    for elem, e_type in required.items():
+        if elem not in data.keys():
+            raise ValueError(f"{pam_file_path} must include {elem}")
+        print()
+        if not isinstance(data[elem], e_type):
+            raise TypeError(f"{pam_file_path} element {elem} must be a {e_type}, but is {type(data[elem])}")
+    return data
     
 
 

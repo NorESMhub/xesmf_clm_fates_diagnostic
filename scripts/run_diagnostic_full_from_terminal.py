@@ -9,7 +9,7 @@ from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics
 standard_run_dict = {
     "weight" : "/projects/NS9188K/NORESM_INTERIM_TEMP/map_files/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
     "outpath" : "figs/",
-    "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.xml",
+    "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.json",
     "compare": None
 }
 
@@ -26,8 +26,9 @@ def print_help_message():
     print("Optional path to run to compare to should point to lnd/hist folder")
     print("outpath=opt_out_path")
     print("Path to where to put outputted diagnostic figures. If not supplied, folder figs under working directory will be assumed")
-    print("opt_file=opt_file_path")
-    print("Path to a figure with various optional parameters set") # TODO: Make example parameterfile
+    print("pamfile=pamfile_path")
+    print("Path to a json file with parameters such as which variables to plot in the various sets") 
+    print("If not supplied the file standard_pams.json will be used, feel free to copy that file as a template") # TODO: Make example parameterfile
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 
