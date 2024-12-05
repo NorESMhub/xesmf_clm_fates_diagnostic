@@ -1,7 +1,5 @@
 import numpy as np
 
-# from sklearn.gaussian_process import GaussianProcessRegressor
-# from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 import xarray as xr
 
 import matplotlib.pyplot as plt
@@ -9,15 +7,14 @@ import matplotlib.pyplot as plt
 import os, sys, glob
 
 # import netCDF4 as nc4
-import shutil
 import warnings
 
 warnings.filterwarnings("ignore")
 
-import xesmf as xe
 import cartopy.crs as ccrs
 
 from .plotting_methods import make_se_regridder, regrid_se_data, make_bias_plot
+from .infrastructure_help_functions import setup_nested_folder_structure_from_dict#, clean_empty_folders_in_tree
 
 # "FPSN", ,"BTRAN2" "SOILPSI","WA","QCHARGE","NEE","WT"
 VAR_LIST_DEFAULT = [
@@ -205,13 +202,22 @@ class XesmfCLMFatesDiagnostics:
             self.casename = casename
         self.region_def = region_def
         if outdir is None:
-            self.outdir = "figs/"
-        else:
-            self.outdir = outdir
+            outdir = "figs/"
+        self.setup_folder_structure(outdir)
     
-    def setup_folder_structure(self):
-        if not os.path.exists(self.outdir):
-            print("Problem")
+    def setup_folder_structure(self, outdir):
+        if not os.path.exists(outdir):
+            raise ValueError(f"{outdir} must be an existing directory")
+        
+        subfolder_structure = {
+            f"{self.casename}": ["trends", "clim_maps", "seasonal_cycle", "compare"]
+        }
+        
+        setup_nested_folder_structure_from_dict(outdir, subfolder_structure)
+        self.outdir = f"{outdir}/{self.casename}"
+
+    #def clean_out_empty_folders(self):
+    #    clean_empty_folders_in_tree(self.outdir)
 
     def get_clm_h0_filelist(self):
         """
@@ -308,7 +314,7 @@ class XesmfCLMFatesDiagnostics:
                     to_plot = to_plot[0, :, :]
                 make_bias_plot(
                     to_plot,
-                    f"{self.outdir}{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
+                    f"{self.outdir}/clim_maps/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
                 )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
@@ -432,7 +438,7 @@ class XesmfCLMFatesDiagnostics:
             )
             figs[region][0].tight_layout()
             figs[region][0].savefig(
-                f"{self.outdir}{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
+                f"{self.outdir}/seasonal_cycle/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
             )
 
     def make_all_regional_timeseries(self, year_range, varlist, varsetname):
@@ -499,7 +505,7 @@ class XesmfCLMFatesDiagnostics:
         for varnum, var in enumerate(varlist):
             if varnum%25 == 0 and varnum > 0:
                 fig.tight_layout()
-                fig.savefig(f"{self.outdir}{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+                fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
                 plt.clf()
                 fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
                 fig_count = fig_count + 1
@@ -507,7 +513,7 @@ class XesmfCLMFatesDiagnostics:
             axs[(varnum%25)//5, (varnum%25)%5].set_title(var, size=30)
             axs[(varnum%25)//5, (varnum%25)%5].set_xlabel("Year", size=25)
         fig.tight_layout()
-        fig.savefig(f"{self.outdir}{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+        fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
         plt.clf()
         return        
         #for year in find_case_year_range(self):
@@ -566,7 +572,7 @@ class XesmfCLMFatesDiagnostics:
             # TODO: include units?
             fig.suptitle(f"{season_name} {var}")
             fig.savefig(
-                f"{self.outdir}{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
+                f"{self.outdir}/compare/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
 
     def find_case_year_range(self):

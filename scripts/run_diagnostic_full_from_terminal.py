@@ -73,6 +73,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
     # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
     run_path,
     run_dict["weight"],
+    outdir = run_dict["outpath"],
     region_def="/projects/NS9560K/diagnostics/noresm/packages/CLM_DIAG/code/resources/region_definitions.nc",
 )
 
