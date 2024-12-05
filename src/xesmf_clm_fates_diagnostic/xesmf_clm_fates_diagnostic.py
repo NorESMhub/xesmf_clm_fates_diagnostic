@@ -210,7 +210,12 @@ class XesmfCLMFatesDiagnostics:
             raise ValueError(f"{outdir} must be an existing directory")
         
         subfolder_structure = {
-            f"{self.casename}": ["trends", "clim_maps", "seasonal_cycle", "compare"]
+            f"{self.casename}": {
+                "trends": None, 
+                "clim_maps": ["ANN", "DJF", "MAM", "JJA", "SON"], 
+                "seasonal_cycle": None, 
+                "compare": ["ANN", "DJF", "MAM", "JJA", "SON"],
+            }
         }
         
         setup_nested_folder_structure_from_dict(outdir, subfolder_structure)
@@ -314,7 +319,7 @@ class XesmfCLMFatesDiagnostics:
                     to_plot = to_plot[0, :, :]
                 make_bias_plot(
                     to_plot,
-                    f"{self.outdir}/clim_maps/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
+                    f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
                 )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
@@ -549,7 +554,7 @@ class XesmfCLMFatesDiagnostics:
                 nrows=3,
                 ncols=1,
                 figsize=(10, 15),
-                subplot_kw={"projection": ccrs.PlateCarree()},
+                subplot_kw={"projection": ccrs.Robinson()},
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
@@ -572,7 +577,7 @@ class XesmfCLMFatesDiagnostics:
             # TODO: include units?
             fig.suptitle(f"{season_name} {var}")
             fig.savefig(
-                f"{self.outdir}/compare/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
+                f"{self.outdir}/compare/{season_name}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
 
     def find_case_year_range(self):

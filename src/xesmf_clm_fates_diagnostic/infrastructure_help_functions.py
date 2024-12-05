@@ -1,5 +1,5 @@
 import os, sys, glob
-
+import json
 
 def setup_folder_if_not_exists(path):
     if not os.path.exists(path):
@@ -32,7 +32,10 @@ def clean_empty_folders_in_tree(root):
     return empty_below
 
 def read_pam_file(pam_file_path):
-    pass
+    with open(pam_file_path, "r") as jsonfile:
+        data = json.load(jsonfile)
+    print(data)
+    
 
 
 
