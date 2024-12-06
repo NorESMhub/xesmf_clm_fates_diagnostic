@@ -1,0 +1,49 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+        "RAIN",
+        "SNOW",
+        "TSOI",
+        "ELAI",
+        "ESAI",
+        "TLAI",
+        "TSAI",
+        "LAISUN",
+        "LAISHA",
+        "QINFL",
+        "QOVER",
+        "QRGWL",
+        "QDRAI",
+        "QINTR",
+        "QSOIL",
+        "QVEGT",
+        "SOILLIQ",
+        "SOILICE",
+        "SNOWLIQ",
+        "SNOWICE",
+        "ZWT",
+        "FCOV",
+        "PCO2",
+        "landfrac",
+        "area",
+        "FSR",
+        "PBOT",
+        "SNOWDP",
+        "FSDS",
+        "FSA",
+        "FLDS",
+        "FIRE",
+        "FIRA",
+        "FSH",
+        "FCTR",
+        "FCEV",
+        "FGEV",
+        "FGR"
+    ],
+
+    "SEASONAL_VARSETS":
+    {
+        "landf": ["TSA", "RAIN", "SNOW", "LAISUN"]
+    },
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"]
+}

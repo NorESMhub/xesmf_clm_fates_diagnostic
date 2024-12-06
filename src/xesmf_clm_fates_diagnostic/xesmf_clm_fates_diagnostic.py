@@ -14,56 +14,12 @@ warnings.filterwarnings("ignore")
 import cartopy.crs as ccrs
 
 from .plotting_methods import make_se_regridder, regrid_se_data, make_bias_plot
-from .infrastructure_help_functions import setup_nested_folder_structure_from_dict#, clean_empty_folders_in_tree
+from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
 
-# "FPSN", ,"BTRAN2" "SOILPSI","WA","QCHARGE","NEE","WT"
-VAR_LIST_DEFAULT = [
-    "TSA",
-    "RAIN",
-    "SNOW",
-    "TSOI",
-    "ELAI",
-    "ESAI",
-    "TLAI",
-    "TSAI",
-    "LAISUN",
-    "LAISHA",
-    "QINFL",
-    "QOVER",
-    "QRGWL",
-    "QDRAI",
-    "QINTR",
-    "QSOIL",
-    "QVEGT",
-    "SOILLIQ",
-    "SOILICE",
-    "SNOWLIQ",
-    "SNOWICE",
-    "ZWT",
-    "FCOV",
-    "PCO2",
-    "landfrac",
-    "area",
-    "FSR",
-    "PBOT",
-    "SNOWDP",
-    "FSDS",
-    "FSA",
-    "FLDS",
-    "FIRE",
-    "FIRA",
-    "FSH",
-    "FCTR",
-    "FCEV",
-    "FGEV",
-    "FGR",
-]
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
 SEASONS = ["DJF", "MAM", "JJA", "SON"]
-VARSETS_TS = {"landf": ["TSA", "RAIN", "SNOW", "LAISUN"]}
-
 
 class XesmfCLMFatesDiagnostics:
     """
@@ -71,15 +27,11 @@ class XesmfCLMFatesDiagnostics:
     regridding variables to plot up in diagnostics etc
     """
     def __init__(
-        self, datapath, weightfile, varlist=None, casename=None, region_def=None, outdir = None
+        self, datapath, weightfile, pamfile, casename=None, region_def=None, outdir = None,
     ):
         self.datapath = datapath
         self.weightfile = weightfile
-        # TODO: Cut varlist to variables actually in files
-        if varlist is None:
-            self.varlist = VAR_LIST_DEFAULT
-        else:
-            self.varlist = varlist
+        self.var_pams = read_pam_file(pamfile)
         self.filelist = self.get_clm_h0_filelist()
         self.filelist.sort()
         self.regridder = make_se_regridder(self.weightfile)
@@ -101,12 +53,20 @@ class XesmfCLMFatesDiagnostics:
                 "trends": None, 
                 "clim_maps": ["ANN", "DJF", "MAM", "JJA", "SON"], 
                 "seasonal_cycle": None, 
-                "compare": ["ANN", "DJF", "MAM", "JJA", "SON"],
             }
         }
         
         setup_nested_folder_structure_from_dict(outdir, subfolder_structure)
         self.outdir = f"{outdir}/{self.casename}"
+
+    
+    def setup_folders_for_comparison_plots(self, other, season):
+        print(self.outdir)
+        subfolder_structure = {
+            "compare": {other.casename: season}
+        }
+        setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
+        return f"{self.outdir}/compare/{other.casename}/{season}"
 
     #def clean_out_empty_folders(self):
     #    clean_empty_folders_in_tree(self.outdir)
@@ -138,7 +98,7 @@ class XesmfCLMFatesDiagnostics:
         """
         outd = None
         if varlist is None:
-            varlist = self.varlist
+            varlist = self.var_pams["VAR_LIST_MAIN"]
         for year in year_range:
             for month in range(12):
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
@@ -167,7 +127,7 @@ class XesmfCLMFatesDiagnostics:
         """
         outd = None
         if varlist is None:
-            varlist = self.varlist
+            varlist = self.var_pams["VAR_LIST_MAIN"]
         for year in year_range:
             outd_yr = None
             for month in range(12):                         
@@ -199,7 +159,7 @@ class XesmfCLMFatesDiagnostics:
         plottype : str
             Name of plottype to annotate the plot
         """
-        for var in self.varlist:
+        for var in self.var_pams["VAR_LIST_MAIN"]:
             if var in outd.keys():
                 to_plot = regrid_se_data(self.regridder, outd[var])
                 if "levgrnd" in to_plot.dims or "levsoi" in to_plot.dims:
@@ -231,7 +191,7 @@ class XesmfCLMFatesDiagnostics:
         """
         outd = None
         if varlist is None:
-            varlist = self.varlist
+            varlist = self.var_pams["VAR_LIST_MAIN"]
         for year in year_range:
             for monthincr in range(3):
 
@@ -242,7 +202,7 @@ class XesmfCLMFatesDiagnostics:
                 mfile = (
                     f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month:02d}.nc"
                 )
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.varlist]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.var_pams["VAR_LIST_MAIN"]]
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -255,13 +215,13 @@ class XesmfCLMFatesDiagnostics:
     def get_monthly_climatology_data(self, year_range, varlist=None):
         outd_months = None
         if varlist is None:
-            varlist = self.varlist
+            varlist = self.var_pams["VAR_LIST_MAIN"]
         for month in range(12):
             outd = None
             for year in year_range:
                 # print(f"Season: {season}, monthincr: {monthincr}, month: {monthincr}")
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month+1:02d}.nc"
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.varlist]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.var_pams["VAR_LIST_MAIN"]]
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -289,7 +249,7 @@ class XesmfCLMFatesDiagnostics:
             self.plot_all_the_variables_on_map(
                 outd, year_range, plottype=SEASONS[season]
             )
-        for varsetname, varset in VARSETS_TS.items():
+        for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
             self.make_all_regional_timeseries(year_range, varset, varsetname)
 
     def get_year_range(self):
@@ -366,7 +326,7 @@ class XesmfCLMFatesDiagnostics:
 
     def make_global_yearly_trends(self, varlist = None, year_range = None):
         if varlist is None:
-            varlist = self.varlist
+            varlist = self.var_pams["VAR_LIST_MAIN"]
         if year_range is not None:
             yr_start = year_range[0]
             yr_end = year_range[1]
@@ -414,9 +374,12 @@ class XesmfCLMFatesDiagnostics:
     def make_table_diagnostics(self):
         pass
 
+
     def make_combined_changeplots(
         self, other, variables, season="ANN", year_range=None
     ):
+        fig_dir = self.setup_folders_for_comparison_plots(other, season)
+        print(fig_dir) 
         # TODO allow variable year_range
         if year_range is None:
             year_range = self.get_year_range()
@@ -448,23 +411,23 @@ class XesmfCLMFatesDiagnostics:
             year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             make_bias_plot(
                 to_plot,
-                f"{self.outdir}{self.casename} (yrs {year_range_str})",
+                f"{self.casename} (yrs {year_range_str})",
                 ax=axs[0],
             )
             make_bias_plot(
                 to_plot_other,
-                f"{self.outdir}{other.casename} (yrs {year_range_str})",
+                f"{other.casename} (yrs {year_range_str})",
                 ax=axs[1],
             )
             make_bias_plot(
                 to_plot - to_plot_other,
-                f"{self.outdir}{self.casename} (yrs {year_range_str})",
+                f"{self.casename} - {other.casename} (yrs {year_range_str})",
                 ax=axs[2],
             )
             # TODO: include units?
             fig.suptitle(f"{season_name} {var}")
             fig.savefig(
-                f"{self.outdir}/compare/{season_name}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
+                f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
 
     def find_case_year_range(self):

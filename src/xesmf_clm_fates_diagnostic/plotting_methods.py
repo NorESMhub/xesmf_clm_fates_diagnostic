@@ -9,6 +9,8 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
     # Use viridis for absolute maps
     print_to_file = False
     if ax is None:
+        print_to_file = True
+    if ax is None:
         fig = plt.figure(figsize=(10, 5))
         # Create a GeoAxes with the PlateCarree projection
         #ax = plt.axes(projection=ccrs.PlateCarree())

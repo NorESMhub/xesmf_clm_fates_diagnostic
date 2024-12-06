@@ -74,12 +74,13 @@ diagnostic = XesmfCLMFatesDiagnostics(
     # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
     run_path,
     run_dict["weight"],
+    run_dict["pamfile"],
     outdir = run_dict["outpath"],
     region_def="/projects/NS9560K/diagnostics/noresm/packages/CLM_DIAG/code/resources/region_definitions.nc",
 )
 
 print("Standard diagnostics:")
-print(diagnostic.find_case_year_range())
+#print(diagnostic.find_case_year_range())
 diagnostic.make_all_plots_and_tables()
 
 if run_dict["compare"] is None:
@@ -93,7 +94,7 @@ else:
         # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
         run_dict['compare'],
         run_dict["weight"],
-        varlist=compare_variables,
+        run_dict["pamfile"],
     )
 
     diagnostic.make_combined_changeplots(diasgnostic_other, compare_variables)

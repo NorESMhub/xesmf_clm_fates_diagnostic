@@ -6,8 +6,6 @@ def setup_folder_if_not_exists(path):
         os.mkdir(path)
 
 def setup_nested_folder_structure_from_dict(root, subfolder_dict):
-    print(root)
-    print(subfolder_dict)
     setup_folder_if_not_exists(root)  
     if isinstance(subfolder_dict, dict):
         for key, value in subfolder_dict.items():
@@ -45,7 +43,6 @@ def read_pam_file(pam_file_path):
     for elem, e_type in required.items():
         if elem not in data.keys():
             raise ValueError(f"{pam_file_path} must include {elem}")
-        print()
         if not isinstance(data[elem], e_type):
             raise TypeError(f"{pam_file_path} element {elem} must be a {e_type}, but is {type(data[elem])}")
     return data
