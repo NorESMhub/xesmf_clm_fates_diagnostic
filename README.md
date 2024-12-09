@@ -16,7 +16,7 @@ To run navigate to the folder called scripts (or extend paths for run-scripts to
 ```
 Then run 
 ```
-python run_diagnostic_full_from_terminal.py path_1 weight=weight_path compare=opt_path_2 outpath=opt_out_path opt_file=opt_file_path
+python run_diagnostic_full_from_terminal.py path_1 weight=weight_path compare=opt_path_2 outpath=opt_out_path pamfile=pamfile_path
 ```
 where `path_1` is the path to the lnd/hist folder containing your output.
 
@@ -28,3 +28,10 @@ The other arguments are optional:
 
 `outpath` is the path of where you want the output diagnostic figures filetree to go. If not sent the figures will be expected to go in a folder called figs situated in whatever directory you ran the command from.
 If you want this to be viewable by web, choose a web-facing directory. For instance if you have access to the NS9560K account, make a subdirectory with the same name as your username in /datalake/NS9560K/www/diagnostics/noresm/ and make that your outpath, i.e. `outpath=/datalake/NS9560K/www/diagnostics/noresm/username`
+
+`pamfile_path` is the path to a parameterfile in which you can specify which variables to plot in the various plots. 
+This file should be a json-file containing the three keyword arguments:
+* VAR_LIST_MAIN - and this should be followed by the list of main variables to plot on maps and for trends
+* SEASONAL_VARSETS - and this should be followed by a dictionary of named variable sets for which to plot seasonal cycles over the various regions
+* COMPARE_VARIABLES - and this should be followed by a list of variables to use to make comparison plots
+If the no pamfile argument is sent, the file standard_pams.json  is used. Feel free to copy that file to use as a template when making your own parameterfile, but we recommend not editing the file itself.
