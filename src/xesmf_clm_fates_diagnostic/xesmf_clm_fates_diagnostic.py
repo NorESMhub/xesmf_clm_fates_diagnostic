@@ -44,7 +44,25 @@ class XesmfCLMFatesDiagnostics:
             outdir = "figs/"
         self.setup_folder_structure(outdir)
         self.unit_dict = {}
-    
+        vars_missing = self.wet_and_cut_varlists()
+        if len(vars_missing):
+            print("Not all requested variables are available in output, ignoring these:")
+            print(vars_missing)
+
+    def wet_and_cut_varlists(self):
+        # TODO: Make sure all items in SEASONAL is also in var_list_main 
+        read = xr.open_dataset(self.filelist[0]).keys()
+        lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
+        vars_missing = []
+        for list_n in lists_check:
+            for item in self.var_pams[list_n]:
+                if item not in read:
+                    vars_missing.append(item)
+            self.var_pams[list_n] = list(set(self.var_pams[list_n]) - set(vars_missing))
+        for varset in self.var_pams["SEASONAL_VARSETS"]:
+            self.var_pams["SEASONAL_VARSETS"][varset] = list(set(self.var_pams["SEASONAL_VARSETS"][varset]) - set(vars_missing))
+        return vars_missing
+
     def setup_folder_structure(self, outdir):
         if not os.path.exists(outdir):
             raise ValueError(f"{outdir} must be an existing directory")
@@ -67,6 +85,13 @@ class XesmfCLMFatesDiagnostics:
         }
         setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
         return f"{self.outdir}/compare/{other.casename}/{season}"
+    
+    def setup_folders_for_seasonal_cycle_plots(self, varset):
+        subfolder_structure = {
+            "seasonal_cycle": varset
+        }
+        setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
+        return
 
     #def clean_out_empty_folders(self):
     #    clean_empty_folders_in_tree(self.outdir)
@@ -80,7 +105,7 @@ class XesmfCLMFatesDiagnostics:
         list
             with paths to all the clm2.h0 files
         """
-        # print(f"{self.datapath}*.clm2.h0.*.nc")
+        #(f"{self.datapath}*.clm2.h0.*.nc")
         return glob.glob(f"{self.datapath}*.clm2.h0.*.nc")
 
     def get_annual_data(self, year_range, varlist=None):
@@ -252,6 +277,7 @@ class XesmfCLMFatesDiagnostics:
                 outd, year_range, plottype=SEASONS[season]
             )
         for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
+
             self.make_all_regional_timeseries(year_range, varset, varsetname)
 
     def get_year_range(self):
@@ -266,12 +292,18 @@ class XesmfCLMFatesDiagnostics:
     ):
         self.add_to_unit_dict(varlist)
         figs = []
+        rownum = int(np.ceil(len(varlist) / 2))
         for i in range(region_df.shape[0]):
-            fig, axs = plt.subplots(ncols=2, nrows=int(np.ceil(len(varlist) / 2)))
+            fig, axs = plt.subplots(ncols=2, nrows=rownum)
             figs.append([fig, axs])
+        print(varlist)
         for varnum, var in enumerate(varlist):
             outd_regr = regrid_se_data(self.regridder, outd[var])
             for region, region_info in region_df.iterrows():
+                if rownum < 2:
+                    axnow = figs[region][1][varnum % 2]
+                else: 
+                    axnow = figs[region][1][varnum // 2, varnum % 2]
                 crop = outd_regr.sel(
                     lat=slice(region_info["BOX_S"], region_info["BOX_N"]),
                     lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
@@ -279,25 +311,21 @@ class XesmfCLMFatesDiagnostics:
                 weights = np.cos(np.deg2rad(crop.lat))
                 weighted_data = crop.weighted(weights)
                 ts_data = weighted_data.mean(["lon", "lat"])
-                figs[region][1][varnum // 2, varnum % 2].plot(range(12), ts_data)
-                figs[region][1][varnum // 2, varnum % 2].set_xticks(
-                    ticks=range(12), labels=MONTHS
-                )
-                figs[region][1][varnum // 2, varnum % 2].set_title(var)
-                figs[region][1][varnum // 2, varnum % 2].set_ylabel(self.unit_dict[var])
-                # print(ts_data)
-                # figs[region][1][varnum//2, varnum%2].set_ylabel(ts_data.unit)
-            # TODO set unit on y-axis
+                axnow.plot(range(12), ts_data)
+                axnow.set_xticks(ticks=range(12), labels=MONTHS)
+                axnow.set_title(var)
+                axnow.set_ylabel(self.unit_dict[var])
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
                 f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
             )
             figs[region][0].tight_layout()
             figs[region][0].savefig(
-                f"{self.outdir}/seasonal_cycle/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
+                f"{self.outdir}/seasonal_cycle/{varsetname}/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
             )
 
     def make_all_regional_timeseries(self, year_range, varlist, varsetname):
+        self.setup_folders_for_seasonal_cycle_plots(varsetname)
         if self.region_def:
             region_ds = xr.open_dataset(self.region_def)
             region_df = region_ds.to_dataframe()
@@ -443,6 +471,7 @@ class XesmfCLMFatesDiagnostics:
         missing = list(set(varlist) - set(self.unit_dict.keys()))
         if len(missing) < 1:
             return
-        read = xr.open_dataset(self.filelist[0])[missing]
+        read = xr.open_dataset(self.filelist[0])
         for vrm in missing:
-            self.unit_dict[vrm] = read[vrm].attrs["units"]
+            if vrm in read.keys():
+                self.unit_dict[vrm] = read[vrm].attrs["units"]

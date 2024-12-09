@@ -11,6 +11,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
     # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
     "/nird/datalake/NS9560K//noresm3/cases/n1850.ne30_tn14.hybrid_fatessp.202401007/lnd/hist/",
     standard_weight,
+    "short_pams.json",
     region_def="/projects/NS9560K/diagnostics/noresm/packages/CLM_DIAG/code/resources/region_definitions.nc",
 )
 
@@ -27,7 +28,7 @@ diasgnostic_other = XesmfCLMFatesDiagnostics(
     # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
     comparison_files,
     standard_weight,
-    varlist=compare_variables,
+    "short_pams.json",
 )
 
 diagnostic.make_combined_changeplots(diasgnostic_other, compare_variables)
