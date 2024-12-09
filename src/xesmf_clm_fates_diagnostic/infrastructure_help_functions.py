@@ -2,6 +2,16 @@ import os, sys, glob
 import json
 
 def setup_folder_if_not_exists(path):
+    """
+    Create a folder if it does not exist already
+
+    Parameters
+    ----------
+    path : str
+        Path to folder that should be created
+
+    """
+    # TODO: Throw error 
     if not os.path.exists(path):
         os.mkdir(path)
 
@@ -35,7 +45,7 @@ def read_pam_file(pam_file_path):
         with open(pam_file_path, "r") as jsonfile:
             data = json.load(jsonfile)
     except json.decoder.JSONDecodeError as err:
-        print(inst)
+        print(err)
         print(f"{pam_file_path} must be a valid json-file")
         sys.exit(4)
     if not isinstance(data, dict):

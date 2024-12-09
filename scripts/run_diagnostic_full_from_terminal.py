@@ -81,6 +81,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
 
 print("Standard diagnostics:")
 #print(diagnostic.find_case_year_range())
+
 diagnostic.make_all_plots_and_tables()
 
 if run_dict["compare"] is None:

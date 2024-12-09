@@ -1,0 +1,16 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+        "SNOW",
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+        "LAISUN"
+    ],
+
+    "SEASONAL_VARSETS":
+    {
+        "landf": ["TSA", "RAIN", "SNOW", "LAISUN"]
+    },
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"]
+}

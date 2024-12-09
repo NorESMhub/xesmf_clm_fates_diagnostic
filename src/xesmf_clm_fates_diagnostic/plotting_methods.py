@@ -5,7 +5,7 @@ import xarray as xr
 import xesmf
 
 
-def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = None):
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = None, xlabel=None):
     # Use viridis for absolute maps
     print_to_file = False
     if ax is None:
@@ -25,7 +25,11 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
         bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)        
     ax.set_title('')
     ax.set_title(figname.split("/")[-1])
-    ax.set_xlabel('')
+    if xlabel is None:
+        ax.set_xlabel('')
+    else:
+        ax.set_xticks([])
+        ax.set_xlabel(xlabel)
     ax.set_ylabel('')
     ax.set_xticklabels([])
     ax.set_yticklabels([])
@@ -34,7 +38,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
     # Show the plot
     if print_to_file:
         fignamefull=figname+'.png'
-        plt.savefig(fignamefull,bbox_inches='tight')
+        fig.savefig(fignamefull,bbox_inches='tight')
 
 def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu_r'):
     # Use viridis for absolute maps

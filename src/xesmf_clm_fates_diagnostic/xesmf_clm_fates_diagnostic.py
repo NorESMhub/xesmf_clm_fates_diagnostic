@@ -43,6 +43,7 @@ class XesmfCLMFatesDiagnostics:
         if outdir is None:
             outdir = "figs/"
         self.setup_folder_structure(outdir)
+        self.unit_dict = {}
     
     def setup_folder_structure(self, outdir):
         if not os.path.exists(outdir):
@@ -61,7 +62,6 @@ class XesmfCLMFatesDiagnostics:
 
     
     def setup_folders_for_comparison_plots(self, other, season):
-        print(self.outdir)
         subfolder_structure = {
             "compare": {other.casename: season}
         }
@@ -159,6 +159,7 @@ class XesmfCLMFatesDiagnostics:
         plottype : str
             Name of plottype to annotate the plot
         """
+        self.add_to_unit_dict(self.var_pams["VAR_LIST_MAIN"])
         for var in self.var_pams["VAR_LIST_MAIN"]:
             if var in outd.keys():
                 to_plot = regrid_se_data(self.regridder, outd[var])
@@ -167,6 +168,7 @@ class XesmfCLMFatesDiagnostics:
                 make_bias_plot(
                     to_plot,
                     f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
+                    xlabel = f"{plottype} {var} [{self.unit_dict[var]}]"
                 )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
@@ -262,6 +264,7 @@ class XesmfCLMFatesDiagnostics:
     def make_timeseries_plots_for_varlist(
         self, outd, varlist, region_df, year_range_string, varsetname
     ):
+        self.add_to_unit_dict(varlist)
         figs = []
         for i in range(region_df.shape[0]):
             fig, axs = plt.subplots(ncols=2, nrows=int(np.ceil(len(varlist) / 2)))
@@ -281,6 +284,7 @@ class XesmfCLMFatesDiagnostics:
                     ticks=range(12), labels=MONTHS
                 )
                 figs[region][1][varnum // 2, varnum % 2].set_title(var)
+                figs[region][1][varnum // 2, varnum % 2].set_ylabel(self.unit_dict[var])
                 # print(ts_data)
                 # figs[region][1][varnum//2, varnum%2].set_ylabel(ts_data.unit)
             # TODO set unit on y-axis
@@ -301,8 +305,8 @@ class XesmfCLMFatesDiagnostics:
                 index=region_df.index[::-1]
             )  # , inplace=True)
             region_df = region_df.astype({"PTITSTR": str, "BOXSTR": str})
-            print(region_df)
-            print(region_df.shape)
+            #print(region_df)
+            #print(region_df.shape)
         else:
             region_df = pd.Dataset(
                 data={
@@ -336,7 +340,7 @@ class XesmfCLMFatesDiagnostics:
         if yr_end == yr_start:
             print("Can not make global annual trend plots from just one year of data")
             return
-   
+        self.add_to_unit_dict(varlist)
         ts_data = np.zeros((len(varlist), len(year_range)))
         weights = None
         
@@ -363,6 +367,7 @@ class XesmfCLMFatesDiagnostics:
                 fig_count = fig_count + 1
             axs[(varnum%25)//5, (varnum%25)%5].plot(year_range, ts_data[varnum, :])
             axs[(varnum%25)//5, (varnum%25)%5].set_title(var, size=30)
+            axs[(varnum%25)//5, (varnum%25)%5].set_ylabel(f"{self.unit_dict[var]}", size=25)
             axs[(varnum%25)//5, (varnum%25)%5].set_xlabel("Year", size=25)
         fig.tight_layout()
         fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
@@ -379,17 +384,14 @@ class XesmfCLMFatesDiagnostics:
         self, other, variables, season="ANN", year_range=None
     ):
         fig_dir = self.setup_folders_for_comparison_plots(other, season)
-        print(fig_dir) 
+        self.add_to_unit_dict(variables)
         # TODO allow variable year_range
         if year_range is None:
             year_range = self.get_year_range()
             year_range_other = other.get_year_range()
-            print(year_range_other)
-            print(year_range)
 
             if year_range_other[0] < year_range[0]:
                 year_range = year_range_other
-            print(year_range)
             # sys.exit(4)
         if season == "ANN":
             outd = self.get_annual_data(year_range, varlist=variables)
@@ -411,21 +413,20 @@ class XesmfCLMFatesDiagnostics:
             year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             make_bias_plot(
                 to_plot,
-                f"{self.casename} (yrs {year_range_str})",
+                f"{self.casename}",
                 ax=axs[0],
             )
             make_bias_plot(
                 to_plot_other,
-                f"{other.casename} (yrs {year_range_str})",
+                f"{other.casename}",
                 ax=axs[1],
             )
             make_bias_plot(
                 to_plot - to_plot_other,
-                f"{self.casename} - {other.casename} (yrs {year_range_str})",
+                f"{self.casename} - {other.casename}",
                 ax=axs[2],
             )
-            # TODO: include units?
-            fig.suptitle(f"{season_name} {var}")
+            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})")
             fig.savefig(
                 f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
@@ -437,3 +438,11 @@ class XesmfCLMFatesDiagnostics:
         if len(self.filelist) < (year_end - year_start) * 12:
             files_missing = True
         return year_start, year_end, files_missing
+
+    def add_to_unit_dict(self, varlist):
+        missing = list(set(varlist) - set(self.unit_dict.keys()))
+        if len(missing) < 1:
+            return
+        read = xr.open_dataset(self.filelist[0])[missing]
+        for vrm in missing:
+            self.unit_dict[vrm] = read[vrm].attrs["units"]
