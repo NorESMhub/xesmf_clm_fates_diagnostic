@@ -474,4 +474,7 @@ class XesmfCLMFatesDiagnostics:
         read = xr.open_dataset(self.filelist[0])
         for vrm in missing:
             if vrm in read.keys():
-                self.unit_dict[vrm] = read[vrm].attrs["units"]
+                if "units" in read[vrm].attrs.keys():
+                    self.unit_dict[vrm] = read[vrm].attrs["units"]
+                else:
+                    self.unit_dict[vrm] = "No unit"
