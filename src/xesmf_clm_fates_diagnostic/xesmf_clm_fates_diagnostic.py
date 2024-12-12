@@ -409,9 +409,11 @@ class XesmfCLMFatesDiagnostics:
 
 
     def make_combined_changeplots(
-        self, other, variables, season="ANN", year_range=None
+        self, other, variables=None, season="ANN", year_range=None
     ):
         fig_dir = self.setup_folders_for_comparison_plots(other, season)
+        if variables is None:
+            variables = self.var_pams["COMPARE_VARIABLES"]
         self.add_to_unit_dict(variables)
         # TODO allow variable year_range
         if year_range is None:

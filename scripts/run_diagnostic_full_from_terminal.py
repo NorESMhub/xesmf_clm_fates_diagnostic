@@ -98,5 +98,5 @@ else:
         run_dict["pamfile"],
     )
 
-    diagnostic.make_combined_changeplots(diasgnostic_other, compare_variables)
+    diagnostic.make_combined_changeplots(diasgnostic_other)
     print(f"Done, output should be in {run_dict['outpath']}")
