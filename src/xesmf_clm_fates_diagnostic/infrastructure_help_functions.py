@@ -52,7 +52,10 @@ def read_pam_file(pam_file_path):
         raise ValueError(f"{pam_file_path} must evaluate to dict")
     for elem, e_type in required.items():
         if elem not in data.keys():
-            raise ValueError(f"{pam_file_path} must include {elem}")
+            if (elem == "COMPARE_VARIABLES") and ("VAR_LIST_MAIN" in data.keys()):
+                data["COMPARE_VARIABLES"] = data["VAR_LIST_MAIN"]
+            else:
+                raise ValueError(f"{pam_file_path} must include {elem}")
         if not isinstance(data[elem], e_type):
             raise TypeError(f"{pam_file_path} element {elem} must be a {e_type}, but is {type(data[elem])}")
     return data

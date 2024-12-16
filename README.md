@@ -6,7 +6,14 @@ Currently very much a work in progress
 
 ## Prerequisites
 
-In order to use the tool you need to load and ESMF module and build an xesmf-containing conda environment on top of it. 
+In order to use the tool you need to load and ESMF module and build an xesmf-containing conda environment on top of it. On Nird running, navigating to the folder called `scripts` and running:
+
+```
+. setup.sh
+```
+will automatically do this for you.
+
+Otherwise you can install an environment using the file `requirements.txt` to install such an environment yourself using conda. However, be aware that to do so you also need ESMF installed and loaded before building, and you need to loaded the same ESMF module when loading the environment. We recommend editing the `setup.sh` file to reflect the setup needed on your machine if you build your own environment this way.
 
 ## Usage
 
@@ -33,5 +40,5 @@ If you want this to be viewable by web, choose a web-facing directory. For insta
 This file should be a json-file containing the three keyword arguments:
 * VAR_LIST_MAIN - and this should be followed by the list of main variables to plot on maps and for trends
 * SEASONAL_VARSETS - and this should be followed by a dictionary of named variable sets for which to plot seasonal cycles over the various regions
-* COMPARE_VARIABLES - and this should be followed by a list of variables to use to make comparison plots
+* COMPARE_VARIABLES - is optional, if included this should be followed by a list of variables to use to make comparison plots, if not sent but a comparison is still requested, the compare_variables will be taken from VAR_LIST_MAIN
 If the no pamfile argument is sent, the file standard_pams.json  is used. Feel free to copy that file to use as a template when making your own parameterfile, but we recommend not editing the file itself.
