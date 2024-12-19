@@ -1,0 +1,110 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+        "RAIN",
+        "SNOW",
+        "TLAI",
+        "FLDS",
+        "RAIN",
+        "LAISUN",
+        "FATES_LEAFC",
+        "FATES_FRACTION",
+        "FATES_AREA_PLANTS",
+        "FATES_AREA_TREES",
+        "FATES_LAI",
+        "FATES_ELAI",
+        "FATES_CA_WEIGHTED_HEIGHT",
+        "FATES_NCOHORTS",
+        "FATES_NPATCHES",
+        "FATES_TVEG",
+        "FATES_GPP",
+        "FATES_STOMATAL_COND",
+        "SNOWDP",
+        "H2OSNO",
+        "FSNO",
+        "QINFL",
+        "QOVER",
+        "QINTR",
+        "QSOIL",
+        "QVEGT",
+        "QVEGE",
+        "FSNO",
+        "TOTSOILLIQ",
+        "TOTSOILICE",
+        "BTRAN",
+        "TV",
+        "TG",
+        "TBOT",
+        "FCTR",
+        "FCEV",
+        "FGR",
+        "FSH",
+        "EFLX_LH_TOT",
+        "FSDS",
+        "FSA",
+        "FSR",
+        "SABV",
+        "SABG",
+        "FIRA",
+        "FIRE",
+	"MEG_isoprene"
+    ],
+    "SEASONAL_VARSETS":
+    {
+        "drivers": ["TSA", "RAIN"],
+        "snow": ["SNOWDP", "SNOW", "H2OSNO", "FSNO"],
+        "fluxes": ["FATES_GPP", "FATES_STOMATAL_COND"],
+        "ecosystem_state": [
+            "FATES_FRACTION",
+            "FATES_AREA_PLANTS",
+            "FATES_AREA_TREES",
+            "FATES_LAI",
+            "FATES_ELAI",
+            "FATES_CA_WEIGHTED_HEIGHT",
+            "FATES_NCOHORTS",
+            "FATES_NPATCHES",
+            "FATES_TVEG"
+        ],
+        "plant_state": [
+            "FATES_LEAFC"
+        ],
+        "water_fluxes": [
+            "QINFL",
+            "QOVER",
+            "QINTR",
+            "QSOIL",
+            "QVEGT",
+            "QVEGE"
+        ],
+        "water_states": [
+            "FSNO",
+            "H2OSNO",
+            "TOTSOILLIQ",
+            "TOTSOILICE",
+            "BTRAN"
+        ],
+        "energy_state":[
+            "TV",
+            "TG",
+            "TBOT"
+        ],
+        "heat_fluxes":[
+            "FCTR",
+            "FCEV",
+            "FGR",
+            "FSH",
+            "EFLX_LH_TOT"
+        ],
+        "radiation_fluxes":[
+            "FSDS",
+            "FSA",
+            "FSR",
+            "SABV",
+            "SABG",
+            "FIRA",
+            "FIRE"
+        ]
+    },
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS", "EFLX_LH_TOT","MEG_isoprene",
+			  "FATES_STOMATAL_COND", "FATES_GPP", "SABV","FSH"]
+}

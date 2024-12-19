@@ -440,16 +440,23 @@ class XesmfCLMFatesDiagnostics:
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
+            print(type(to_plot))
+            ymaxv = np.max((to_plot.max(), to_plot_other.max()))
+            yminv = np.max((to_plot.min(), to_plot_other.min()))
             year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             make_bias_plot(
                 to_plot,
                 f"{self.casename}",
                 ax=axs[0],
+                yminv = yminv,
+                ymaxv = ymaxv
             )
             make_bias_plot(
                 to_plot_other,
                 f"{other.casename}",
                 ax=axs[1],
+                yminv = yminv,
+                ymaxv = ymaxv
             )
             make_bias_plot(
                 to_plot - to_plot_other,
