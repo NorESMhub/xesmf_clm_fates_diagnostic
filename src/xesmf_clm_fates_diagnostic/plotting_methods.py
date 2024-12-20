@@ -19,12 +19,23 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
         print_to_file = True
     
     # Plot the data on the map
+    if xlabel is not None:
+        if xlabel.split("[")[-1][:-1] == "K":
+            bias = bias -273.15
+            xlabel = xlabel.replace("[K]", "[C]")
+            if yminv is not None:
+                yminv = yminv -273.15
+            if ymaxv is not None:
+                ymaxv = ymaxv -273.15
+                       
+
     if (yminv is None) or (ymaxv is None):
         bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
     else:
         bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)        
     ax.set_title('')
     ax.set_title(figname.split("/")[-1])
+
     if xlabel is None:
         ax.set_xlabel('')
     else:
@@ -94,7 +105,8 @@ def make_se_regridder(weight_file):
         dummy_in,
         dummy_out,
         weights=weight_file,
-        method="bilinear",
+        method="coservative_normed",
+        #method="bilinear",
         reuse_weights=True,
         periodic=True,
     )

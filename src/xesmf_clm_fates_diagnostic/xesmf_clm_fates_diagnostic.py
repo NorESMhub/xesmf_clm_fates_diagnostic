@@ -21,6 +21,16 @@ MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
 SEASONS = ["DJF", "MAM", "JJA", "SON"]
 
+def get_unit_conversion_and_new_label(orig_unit):
+    shift = 0
+    if orig_unit == "K":
+        shift = -273.15
+        ylabel = "C"
+    else:
+        ylabel = orig_unit
+    return shift, ylabel
+
+
 class XesmfCLMFatesDiagnostics:
     """
     Class that holds and organises info on modelling outputs,
@@ -311,10 +321,12 @@ class XesmfCLMFatesDiagnostics:
                 weights = np.cos(np.deg2rad(crop.lat))
                 weighted_data = crop.weighted(weights)
                 ts_data = weighted_data.mean(["lon", "lat"])
-                axnow.plot(range(12), ts_data)
+
+                shift, ylabel = get_unit_conversion_and_new_label(self.unit_dict[var])
+                axnow.plot(range(12), ts_data + shift)
                 axnow.set_xticks(ticks=range(12), labels=MONTHS)
                 axnow.set_title(var)
-                axnow.set_ylabel(self.unit_dict[var])
+                axnow.set_ylabel(ylabel)
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
                 f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
@@ -393,9 +405,11 @@ class XesmfCLMFatesDiagnostics:
                 plt.clf()
                 fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
                 fig_count = fig_count + 1
-            axs[(varnum%25)//5, (varnum%25)%5].plot(year_range, ts_data[varnum, :])
+            # TODO: Make this more general to handle other unit changes
+            shift, ylabel = get_unit_conversion_and_new_label(self.unit_dict[var])
+            axs[(varnum%25)//5, (varnum%25)%5].plot(year_range, ts_data[varnum, :]+ shift)
             axs[(varnum%25)//5, (varnum%25)%5].set_title(var, size=30)
-            axs[(varnum%25)//5, (varnum%25)%5].set_ylabel(f"{self.unit_dict[var]}", size=25)
+            axs[(varnum%25)//5, (varnum%25)%5].set_ylabel(ylabel, size=25)
             axs[(varnum%25)//5, (varnum%25)%5].set_xlabel("Year", size=25)
         fig.tight_layout()
         fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
@@ -422,7 +436,7 @@ class XesmfCLMFatesDiagnostics:
 
             if year_range_other[0] < year_range[0]:
                 year_range = year_range_other
-            # sys.exit(4)
+
         if season == "ANN":
             outd = self.get_annual_data(year_range, varlist=variables)
             outd_other = other.get_annual_data(year_range, varlist=variables)
@@ -440,28 +454,31 @@ class XesmfCLMFatesDiagnostics:
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
-            print(type(to_plot))
+
             ymaxv = np.max((to_plot.max(), to_plot_other.max()))
             yminv = np.max((to_plot.min(), to_plot_other.min()))
+            
             year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             make_bias_plot(
                 to_plot,
                 f"{self.casename}",
                 ax=axs[0],
                 yminv = yminv,
-                ymaxv = ymaxv
+                ymaxv = ymaxv,
+                xlabel = f"{season} {var} [{self.unit_dict[var]}]"
             )
             make_bias_plot(
                 to_plot_other,
                 f"{other.casename}",
                 ax=axs[1],
                 yminv = yminv,
-                ymaxv = ymaxv
+                ymaxv = ymaxv,
+                xlabel = f"{season} {var} [{self.unit_dict[var]}]"
             )
             make_bias_plot(
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
-                ax=axs[2],
+                ax=axs[2]
             )
             fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})")
             fig.savefig(
