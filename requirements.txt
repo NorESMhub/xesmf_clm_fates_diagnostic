@@ -140,7 +140,7 @@ snappy=1.2.1=ha2e4443_0
 sparse=0.15.4=pyhd8ed1ab_0
 sqlite=3.46.0=h6d4b2fc_0
 tk=8.6.13=noxft_h4845f30_101
-tornado=6.4.1=py312h9a8786e_0
+tornado>6.4.2=py312h9a8786e_0
 tzdata=2024a=h0c530f3_0
 wayland=1.23.0=h5291e77_0
 wheel=0.44.0=pyhd8ed1ab_0
