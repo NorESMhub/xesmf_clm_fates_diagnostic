@@ -15,20 +15,11 @@ import cartopy.crs as ccrs
 
 from .plotting_methods import make_se_regridder, regrid_se_data, make_bias_plot
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
-
+from  .misc_help_functions import get_unit_conversion_and_new_label
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
 SEASONS = ["DJF", "MAM", "JJA", "SON"]
-
-def get_unit_conversion_and_new_label(orig_unit):
-    shift = 0
-    if orig_unit == "K":
-        shift = -273.15
-        ylabel = "C"
-    else:
-        ylabel = orig_unit
-    return shift, ylabel
 
 
 class XesmfCLMFatesDiagnostics:

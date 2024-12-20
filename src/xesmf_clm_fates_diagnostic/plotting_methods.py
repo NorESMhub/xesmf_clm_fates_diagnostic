@@ -4,6 +4,8 @@ import numpy as np
 import xarray as xr
 import xesmf
 
+from  .misc_help_functions import get_unit_conversion_and_new_label
+
 
 def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = None, xlabel=None):
     # Use viridis for absolute maps
@@ -20,13 +22,9 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
     
     # Plot the data on the map
     if xlabel is not None:
-        if xlabel.split("[")[-1][:-1] == "K":
-            bias = bias -273.15
-            xlabel = xlabel.replace("[K]", "[C]")
-            if yminv is not None:
-                yminv = yminv -273.15
-            if ymaxv is not None:
-                ymaxv = ymaxv -273.15
+        shift, xlabel = get_unit_conversion_and_new_label(xlabel.split("[")[-1][:-1])
+        bias = bias + shift
+
                        
 
     if (yminv is None) or (ymaxv is None):
