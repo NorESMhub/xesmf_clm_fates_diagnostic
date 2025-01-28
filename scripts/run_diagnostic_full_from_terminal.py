@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../", "src"))
 from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics
 
 standard_run_dict = {
-    "weight" : "/projects/NS9188K/NORESM_INTERIM_TEMP/map_files/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
+    "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
     "outpath" : "figs/",
     "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.json",
     "compare": None
@@ -88,7 +88,6 @@ if run_dict["compare"] is None:
     print(f"Done, output should be in {run_dict['outpath']}")
 else:
     print(f"Comparison diagnostics with {run_dict['compare']}")
-    compare_variables = ["TSA", "RAIN", "SNOW", "FSR", "FSDS"]
 
     diasgnostic_other = XesmfCLMFatesDiagnostics(
         # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",

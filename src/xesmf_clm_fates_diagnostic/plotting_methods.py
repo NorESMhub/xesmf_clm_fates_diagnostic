@@ -103,8 +103,8 @@ def make_se_regridder(weight_file):
         dummy_in,
         dummy_out,
         weights=weight_file,
-        method="coservative_normed",
-        #method="bilinear",
+        #method="conservative_normed",
+        method="bilinear",
         reuse_weights=True,
         periodic=True,
     )

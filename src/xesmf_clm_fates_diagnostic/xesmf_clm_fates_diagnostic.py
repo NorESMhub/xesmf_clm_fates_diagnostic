@@ -54,12 +54,17 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Make sure all items in SEASONAL is also in var_list_main 
         read = xr.open_dataset(self.filelist[0]).keys()
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
+
         vars_missing = []
         for list_n in lists_check:
             for item in self.var_pams[list_n]:
                 if item not in read:
                     vars_missing.append(item)
             self.var_pams[list_n] = list(set(self.var_pams[list_n]) - set(vars_missing))
+        for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
+            for vari in varset:
+                if vari not in read and vari not in vars_missing:
+                    vars_missing.append(vari)
         for varset in self.var_pams["SEASONAL_VARSETS"]:
             self.var_pams["SEASONAL_VARSETS"][varset] = list(set(self.var_pams["SEASONAL_VARSETS"][varset]) - set(vars_missing))
         return vars_missing
@@ -418,7 +423,7 @@ class XesmfCLMFatesDiagnostics:
     ):
         fig_dir = self.setup_folders_for_comparison_plots(other, season)
         if variables is None:
-            variables = self.var_pams["COMPARE_VARIABLES"]
+            variables = list(set(self.var_pams["COMPARE_VARIABLES"]).intersection(set(other.var_pams["COMPARE_VARIABLES"])))
         self.add_to_unit_dict(variables)
         # TODO allow variable year_range
         if year_range is None:
@@ -438,9 +443,9 @@ class XesmfCLMFatesDiagnostics:
             season_name = SEASONS[season]
         for var in variables:
             fig, axs = plt.subplots(
-                nrows=3,
-                ncols=1,
-                figsize=(10, 15),
+                nrows=1,
+                ncols=3,
+                figsize=(30, 10),
                 subplot_kw={"projection": ccrs.Robinson()},
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
