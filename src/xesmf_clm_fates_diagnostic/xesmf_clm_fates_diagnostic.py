@@ -22,6 +22,10 @@ MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 SEASONS = ["DJF", "MAM", "JJA", "SON"]
 
 
+#def get_minimal_intersecting_year_range(year_range, year_range_other):
+
+
+
 class XesmfCLMFatesDiagnostics:
     """
     Class that holds and organises info on modelling outputs,
@@ -291,6 +295,8 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Deal with missing files, also for different year_range
         if not files_missing:
             year_range = np.arange(max(year_start, year_end - 10), year_end + 1)
+        else:
+            raise ValueError(f"Files are missing in the year range from {year_start}, {year_end}") 
         return year_range
 
     def make_timeseries_plots_for_varlist(
@@ -299,6 +305,7 @@ class XesmfCLMFatesDiagnostics:
         self.add_to_unit_dict(varlist)
         figs = []
         rownum = int(np.ceil(len(varlist) / 2))
+        print(varlist)
         for i in range(region_df.shape[0]):
             fig, axs = plt.subplots(ncols=2, nrows=rownum)
             figs.append([fig, axs])
@@ -416,30 +423,64 @@ class XesmfCLMFatesDiagnostics:
 
     def make_table_diagnostics(self):
         pass
+    
+    def get_year_ranges_for_comparison(self, other, year_range_in=None):
+        year_range_avail = self.get_year_range()
+        year_range_other_avail = other.get_year_range()
+        if year_range_in is None:
+            year_range = year_range_avail
+            year_range_other = year_range_other_avail
+            if year_range_other[0] < year_range[0]:
+                year_range = year_range_other
+            else:
+                year_range_other = year_range
+            return year_range, year_range_other
+        
+        if "year_range" in year_range_in:
+            year_range = year_range_in["year_range"]
+            if "year_range_other" in year_range_in:
+                year_range_other = year_range_in["year_range_other"]
+            else:
+                year_range_other = year_range
+            if year_range_other[0] < year_range_other_avail[0] or year_range_other[-1] > year_range_other_avail[-1]:
+                year_range_other = np.arange(np.max(year_range_other[0], year_range_other_avail[0]))
+        elif "compare_from_start" in year_range_in:
+            year_range = np.arange(year_range_avail[0], year_range_avail[0] + year_range_in["compare_from_start"])
+            year_range_other = np.arange(year_range_other_avail[0], year_range_other_avail[0] + year_range_in["compare_from_start"])
+        elif "compare_from_end" in year_range_in:
+            year_range = np.arange(year_range_avail[-1]-year_range_in["compare_from_end"], year_range_avail[-1]+1)
+            year_range_other = np.arange(year_range_other_avail[-1]-year_range_in["compare_from_end"], year_range_other_avail[-1]+1)
+
+        # Making sure the requested years are in range:
+        print(f"year_range[0]: {year_range[0]}, year_range_avail[0]: {year_range_avail[0]}, year_range[-1]: {year_range[-1]} and year_range_avail[-1] {year_range_avail[-1]}")
+        print(f"year_range_other[0]: {year_range_other[0]}, year_range_other_avail[0]: {year_range_other_avail[0]}, year_range_other[-1]: {year_range_other[-1]} and year_range_other_avail[-1] {year_range_other_avail[-1]}")
+        print(np.max((year_range[0], year_range_avail[0])))
+        print(np.min((year_range[-1], year_range_avail[-1])))
+              
+        try:
+            year_range = np.arange(np.max((year_range[0], year_range_avail[0])), np.min((year_range[-1], year_range_avail[-1])) + 1)
+            year_range_other = np.arange(np.max((year_range_other[0], year_range_other_avail[0])), np.min((year_range_other[-1], year_range_other_avail[-1])) + 1)
+        except:
+            raise ValueError(f"The requested year ranges {year_range} and {year_range_other} have no overlap with available data ranges {year_range_avail} and {year_range_other_avail}")
+        return year_range, year_range_other
 
 
     def make_combined_changeplots(
-        self, other, variables=None, season="ANN", year_range=None
+        self, other, variables=None, season="ANN", year_range_in=None
     ):
         fig_dir = self.setup_folders_for_comparison_plots(other, season)
         if variables is None:
             variables = list(set(self.var_pams["COMPARE_VARIABLES"]).intersection(set(other.var_pams["COMPARE_VARIABLES"])))
         self.add_to_unit_dict(variables)
-        # TODO allow variable year_range
-        if year_range is None:
-            year_range = self.get_year_range()
-            year_range_other = other.get_year_range()
-
-            if year_range_other[0] < year_range[0]:
-                year_range = year_range_other
+        year_range, year_range_other = self.get_year_ranges_for_comparison(other, year_range_in)
 
         if season == "ANN":
             outd = self.get_annual_data(year_range, varlist=variables)
-            outd_other = other.get_annual_data(year_range, varlist=variables)
+            outd_other = other.get_annual_data(year_range_other, varlist=variables)
             season_name = season
         else:
             outd = self.get_seasonal_data(season, year_range, varlist=None)
-            outd_other = other.get_seasonal_data(season, year_range, varlist=None)
+            outd_other = other.get_seasonal_data(season, year_range_other, varlist=None)
             season_name = SEASONS[season]
         for var in variables:
             fig, axs = plt.subplots(
@@ -453,8 +494,10 @@ class XesmfCLMFatesDiagnostics:
 
             ymaxv = np.max((to_plot.max(), to_plot_other.max()))
             yminv = np.max((to_plot.min(), to_plot_other.min()))
-            
-            year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
+            if year_range[0] == year_range_other[0] and year_range[-1] == year_range_other[-1]:
+                year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
+            else:
+                year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}_vs_{year_range_other[0]:04d}-{year_range_other[-1]:04d}"
             make_bias_plot(
                 to_plot,
                 f"{self.casename}",

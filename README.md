@@ -21,6 +21,10 @@ To run navigate to the folder called scripts (or extend paths for run-scripts to
 ```
 . setup.sh
 ```
+or alternatively, if you are on a nird node that has been updated to use new Betzy modules:
+```
+. setup_updated_node.sh
+```
 Then run 
 ```
 python run_diagnostic_full_from_terminal.py path_1 weight=weight_path compare=opt_path_2 outpath=opt_out_path pamfile=pamfile_path
@@ -42,3 +46,8 @@ This file should be a json-file containing the three keyword arguments:
 * SEASONAL_VARSETS - and this should be followed by a dictionary of named variable sets for which to plot seasonal cycles over the various regions
 * COMPARE_VARIABLES - is optional, if included this should be followed by a list of variables to use to make comparison plots, if not sent but a comparison is still requested, the compare_variables will be taken from VAR_LIST_MAIN
 If the no pamfile argument is sent, the file standard_pams.json  is used. Feel free to copy that file to use as a template when making your own parameterfile, but we recommend not editing the file itself.
+
+With command line arguments, you can also control the comparison output
+`compare_from_start` or `compare_from_end` allows you to set the comparison between the runs to consider the `n` first or last years of each of the comparison runs.
+`compare_custom_year_range` gives you the option to choose specific years to compare on the format `yearstart-yearend` if you want the same range from both sets, 
+or `yearstart-yearend_yearstart-yearend` if you want one range for the main dataset, and a different range for the second one.
