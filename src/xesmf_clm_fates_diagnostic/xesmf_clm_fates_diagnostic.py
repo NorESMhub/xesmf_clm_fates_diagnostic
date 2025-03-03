@@ -478,10 +478,12 @@ class XesmfCLMFatesDiagnostics:
             outd = self.get_annual_data(year_range, varlist=variables)
             outd_other = other.get_annual_data(year_range_other, varlist=variables)
             season_name = season
+            fig_dir = self.setup_folders_for_comparison_plots(other, season)
         else:
             outd = self.get_seasonal_data(season, year_range, varlist=None)
             outd_other = other.get_seasonal_data(season, year_range_other, varlist=None)
             season_name = SEASONS[season]
+            fig_dir = self.setup_folders_for_comparison_plots(other, SEASONS[season])
         for var in variables:
             fig, axs = plt.subplots(
                 nrows=1,

@@ -13,7 +13,11 @@ standard_run_dict = {
     "outpath" : "figs/",
     "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.json",
     "compare": None,
-    "year_range_compare": None
+    "year_range_compare": None, 
+}
+
+run_dict_optional_arguments = {
+    "compare_seasonal": False    
 }
 
 def print_help_message():
@@ -39,7 +43,9 @@ def print_help_message():
     print("If you supply more than one of them, the last one supplied will be used")
     print("The custom year range can either be the same for both simulations, in which case year-year is sufficient")
     print("If the years in the two comparison sets are to be different, you need to supply year-year_year-year")
-    print("where the first year-year denotes the range for the main dataset, and the second that of the comparison dataset")    
+    print("where the first year-year denotes the range for the main dataset, and the second that of the comparison dataset")
+    print("compare_seasonal=True")
+    print("Adds seasonal comparison plots, if comparison plotting is included. Yearranges for this will be the same as for annual comparison plots")
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 
@@ -60,11 +66,16 @@ def read_optional_arguments(arguments):
             run_dict["year_range_compare"] = {"year_range":np.arange(int(split[0].split("-")[0]), int(split[0].split("-")[-1]) +1)}
             if len(split) > 1:
                 run_dict["year_range_compare"]["year_range_other"] = np.arange(int(split[1].split("-")[0]), int(split[1].split("-")[-1]) +1)
+        elif arg_key in run_dict_optional_arguments:
+            run_dict[arg_key] = arg_val
         else:
             print(f"Argument {arg} is not a valid argument and will be ignored")
         if not os.path.exists(run_dict["outpath"]):
             print(f"Output path {run_dict['outpath']} must exist")
             print_help_message()
+    for arg_key_opt, arg_val_opt in run_dict_optional_arguments.items():
+        if arg_key_opt not in run_dict:
+            run_dict[arg_key_opt] = run_dict[arg_val_opt] 
     return run_dict
 
 # Making sure there is a run_path argument
@@ -100,7 +111,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
 print("Standard diagnostics:")
 #print(diagnostic.find_case_year_range())
 
-#diagnostic.make_all_plots_and_tables()
+diagnostic.make_all_plots_and_tables()
 
 if run_dict["compare"] is None:
     print(f"Done, output should be in {run_dict['outpath']}")
@@ -116,4 +127,9 @@ else:
     )
 
     diagnostic.make_combined_changeplots(diasgnostic_other, year_range_in=run_dict["year_range_compare"])
+    if run_dict["compare_seasonal"]:
+        print("Seasons true")
+        for season in range(4):
+            print(f"Comparison statistics with {season}")
+            diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"])
     print(f"Done, output should be in {run_dict['outpath']}")
