@@ -51,6 +51,7 @@ def print_help_message():
 
 def read_optional_arguments(arguments):
     run_dict = standard_run_dict.copy()
+    print(arguments)
     for arg in arguments:
         arg_key = arg.split("=")[0] 
         arg_val = arg.split("=")[-1] 
@@ -75,7 +76,7 @@ def read_optional_arguments(arguments):
             print_help_message()
     for arg_key_opt, arg_val_opt in run_dict_optional_arguments.items():
         if arg_key_opt not in run_dict:
-            run_dict[arg_key_opt] = run_dict[arg_val_opt] 
+            run_dict[arg_key_opt] = arg_val_opt 
     return run_dict
 
 # Making sure there is a run_path argument

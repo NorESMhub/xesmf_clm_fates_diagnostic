@@ -72,6 +72,12 @@ def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap =
     fignamefull=figname+'.png'
     plt.savefig(fignamefull,bbox_inches='tight')
 
+def make_generic_regridder(weightfile, filename_exmp):
+    exmp_dataset = xr.open_dataset(filename_exmp)
+    if "lon" in exmp_dataset.dims and "lat" in exmp_dataset.dims:
+        return None
+    else:
+        return make_se_regridder(weight_file=weightfile)
     
 def make_se_regridder(weight_file):
     weights = xr.open_dataset(weight_file)
@@ -111,6 +117,8 @@ def make_se_regridder(weight_file):
     return regridder
 
 def regrid_se_data(regridder, data_to_regrid):
+    if regridder is None:
+        return data_to_regrid
     #print(data_to_regrid.dims)
     if isinstance(data_to_regrid, xr.DataArray):
         #print(type(data_to_regrid))

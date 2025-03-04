@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 import cartopy.crs as ccrs
 
-from .plotting_methods import make_se_regridder, regrid_se_data, make_bias_plot
+from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
 from  .misc_help_functions import get_unit_conversion_and_new_label
 
@@ -39,7 +39,7 @@ class XesmfCLMFatesDiagnostics:
         self.var_pams = read_pam_file(pamfile)
         self.filelist = self.get_clm_h0_filelist()
         self.filelist.sort()
-        self.regridder = make_se_regridder(self.weightfile)
+        self.regridder = make_generic_regridder(self.weightfile, self.filelist[0])
         if casename is None:
             self.casename = ".".join(self.filelist[0].split("/")[-1].split(".")[:-4])
         else:
@@ -450,12 +450,6 @@ class XesmfCLMFatesDiagnostics:
         elif "compare_from_end" in year_range_in:
             year_range = np.arange(year_range_avail[-1]-year_range_in["compare_from_end"], year_range_avail[-1]+1)
             year_range_other = np.arange(year_range_other_avail[-1]-year_range_in["compare_from_end"], year_range_other_avail[-1]+1)
-
-        # Making sure the requested years are in range:
-        print(f"year_range[0]: {year_range[0]}, year_range_avail[0]: {year_range_avail[0]}, year_range[-1]: {year_range[-1]} and year_range_avail[-1] {year_range_avail[-1]}")
-        print(f"year_range_other[0]: {year_range_other[0]}, year_range_other_avail[0]: {year_range_other_avail[0]}, year_range_other[-1]: {year_range_other[-1]} and year_range_other_avail[-1] {year_range_other_avail[-1]}")
-        print(np.max((year_range[0], year_range_avail[0])))
-        print(np.min((year_range[-1], year_range_avail[-1])))
               
         try:
             year_range = np.arange(np.max((year_range[0], year_range_avail[0])), np.min((year_range[-1], year_range_avail[-1])) + 1)
