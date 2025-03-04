@@ -7,7 +7,7 @@ import xesmf
 from  .misc_help_functions import get_unit_conversion_and_new_label
 
 
-def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = None, xlabel=None):
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None):
     # Use viridis for absolute maps
     print_to_file = False
     if ax is None:
@@ -19,6 +19,9 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
         
         ax = plt.axes(projection=ccrs.Robinson())
         print_to_file = True
+        shrink = 0.7
+    else:
+        shrink = 0.5
     
     # Plot the data on the map
     if xlabel is not None:
@@ -28,9 +31,11 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
                        
 
     if (yminv is None) or (ymaxv is None):
-        bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+        im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
     else:
-        bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)        
+        im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)
+              
+    
     ax.set_title('')
     ax.set_title(figname.split("/")[-1])
 
@@ -43,6 +48,11 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'RdYlBu_r',ax = Non
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.coastlines()
+    cb =  im.colorbar
+    cb.remove()
+    #cb.
+    plt.colorbar(im, ax=ax, shrink=shrink)#fraction=0.046, pad=0.04) 
+
     
     # Show the plot
     if print_to_file:

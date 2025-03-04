@@ -484,6 +484,7 @@ class XesmfCLMFatesDiagnostics:
                 ncols=3,
                 figsize=(30, 10),
                 subplot_kw={"projection": ccrs.Robinson()},
+                layout = 'constrained'
             )
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
@@ -513,7 +514,8 @@ class XesmfCLMFatesDiagnostics:
             make_bias_plot(
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
-                ax=axs[2]
+                ax=axs[2], 
+                cmap = "RdYlBu_r"
             )
             fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})")
             fig.savefig(
