@@ -79,7 +79,13 @@ def read_optional_arguments(arguments):
             print_help_message()
     for arg_key_opt, arg_val_opt in run_dict_optional_arguments.items():
         if arg_key_opt not in run_dict:
-            run_dict[arg_key_opt] = arg_val_opt 
+            run_dict[arg_key_opt] = arg_val_opt
+
+    # In case you are not working on NIRD, and forget to send weight-file
+    if not os.path.exists(run_dict["weight"]):
+        print("Weight file path does not exist. will run with dummy argument-file.")
+        print("This will only work for regular lat-lon data")
+        run_dict["weight"] = run_dict["pamfile"]
     return run_dict
 
 # Making sure there is a run_path argument
@@ -101,6 +107,7 @@ if len(glob.glob(f"{run_path}*.nc")) < 1:
     print_help_message()
 
 run_dict = read_optional_arguments(sys.argv[2:])
+
 print(f"All set, setting up to run diagnostics on {run_path} using options:")
 print(run_dict)
 

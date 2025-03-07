@@ -13,7 +13,7 @@ In order to use the tool you need to load and ESMF module and build an xesmf-con
 ```
 will automatically do this for you.
 
-Otherwise you can install an environment using the file `requirements.txt` to install such an environment yourself using conda. However, be aware that to do so you also need ESMF installed and loaded before building, and you need to loaded the same ESMF module when loading the environment. We recommend editing the `setup.sh` file to reflect the setup needed on your machine if you build your own environment this way.
+Otherwise you can install an environment using the file `conda_env.yaml` to install such an environment yourself using conda (or Miniforge). However, be aware that to do so you also need ESMF installed and loaded before building, and you need to loaded the same ESMF module when loading the environment. We recommend editing the `setup.sh` file to reflect the setup needed on your machine if you build your own environment this way.
 
 ## Usage
 
@@ -33,7 +33,7 @@ where `path_1` is the path to the lnd/hist folder containing your output.
 
 The other arguments are optional:
 
-`weight_path` is a path to a weight-file if the standard one is not to be used 
+`weight_path` is a path to a weight-file if the standard one is not to be used. For regular lat, lon runs, the weight-file is not used, and hence you can send a dumy argument, use the standard, or if not working on nird, the tool will try to add a dummy and run without if you don't send a weight_path.
 
 `opt_path_2` is a path to output from a run you wish to compare to 
 
