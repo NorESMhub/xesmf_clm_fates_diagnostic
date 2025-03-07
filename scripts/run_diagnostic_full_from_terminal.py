@@ -59,7 +59,10 @@ def read_optional_arguments(arguments):
             if not os.path.exists(arg_val):
                 print(f"Invalid path {arg_val} for {arg_key} will be ignored")
             else:
-                run_dict[arg_key] = arg_val
+                if os.path.isdir(arg_val) and arg_val[-1] != "/":
+                    run_dict[arg_key] = f"{arg_val}/"
+                else:
+                    run_dict[arg_key] = arg_val
         elif arg_key in  ["compare_from_start", "compare_from_end"]:
             run_dict["year_range_compare"] = {arg_key:int(arg_val)}
         elif arg_key == "compare_custom_year_range":
@@ -90,7 +93,9 @@ if not os.path.exists(run_path):
     print("You must supply a path to land output data,  path to lnd/hist folder is expected!")
     print(f"path {run_path} does not exist")
     print_help_message()
-if len(glob.glob(f"{run_path}/*.nc")) < 1:
+if run_path[-1] != "/":
+    run_path = f"{run_path}/"
+if len(glob.glob(f"{run_path}*.nc")) < 1:
     print("You must supply a path to land output data,  path to lnd/hist folder is expected")
     print(f"path {run_path} contains no netcdf files")
     print_help_message()
