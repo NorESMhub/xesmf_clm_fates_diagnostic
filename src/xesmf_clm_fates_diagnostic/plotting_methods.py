@@ -89,7 +89,7 @@ def make_generic_regridder(weightfile, filename_exmp):
     else:
         return make_se_regridder(weight_file=weightfile)
     
-def make_se_regridder(weight_file):
+def make_se_regridder(weight_file, regrid_method="conserved"):
     weights = xr.open_dataset(weight_file)
     in_shape = weights.src_grid_dims.load().data
 
@@ -102,16 +102,26 @@ def make_se_regridder(weight_file):
 
     #print(in_shape, out_shape)
 
+    #Some prep to get the bounds:
+    lat_b_out = np.zeros(in_shape[0]+1)
+    lon_b_out = weights.xv_b.data[:in_shape[1]+1, 0]
+    lat_b_out[:-1] = weights.yv_b.data[np.arange(in_shape[0])*in_shape[1],0]
+    lat_b_out[-1] = weights.yv_b.data[-1,-1]
+
     dummy_in = xr.Dataset(
         {
             "lat": ("lat", np.empty((in_shape[0],))),
             "lon": ("lon", np.empty((in_shape[1],))),
+            "lat_b": ("lat_b", np.empty((in_shape[0] + 1,))),
+            "lon_b": ("lon_b", np.empty((in_shape[1] + 1,))),
         }
     )
     dummy_out = xr.Dataset(
         {
             "lat": ("lat", weights.yc_b.data.reshape(out_shape)[:, 0]),
             "lon": ("lon", weights.xc_b.data.reshape(out_shape)[0, :]),
+            "lat_b": ("lat_b", lat_b_out),
+            "lon_b": ("lon_b", lon_b_out),
         }
     )
 
@@ -119,8 +129,8 @@ def make_se_regridder(weight_file):
         dummy_in,
         dummy_out,
         weights=weight_file,
-        #method="conservative_normed",
-        method="bilinear",
+        method=regrid_method,#"conservative_normed",
+        #method="bilinear",
         reuse_weights=True,
         periodic=True,
     )
