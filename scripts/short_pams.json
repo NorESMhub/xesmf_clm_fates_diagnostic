@@ -5,12 +5,22 @@
         "TLAI",
         "FLDS", 
         "RAIN",
-        "LAISUN"
+        "LAISUN",
+        "FATES_GPP",
+        "FSH",
+        "EFLX_LH_TOT"
     ],
 
     "SEASONAL_VARSETS":
     {
         "landf": ["TSA", "RAIN", "SNOW", "LAISUN"]
     },
-    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"]
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"],
+
+    "OBSERVATION_COMPARISON" : {
+        "hfss": ["FLUXCOM"],
+        "hfls": ["FLUXCOM"],
+        "FPSN": ["FLUXCOM"],
+        "lai": ["MODIS"]
+    }
 }

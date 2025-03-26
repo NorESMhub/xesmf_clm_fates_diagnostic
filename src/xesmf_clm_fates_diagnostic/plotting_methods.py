@@ -103,9 +103,9 @@ def make_se_regridder(weight_file, regrid_method="conserved"):
     #print(in_shape, out_shape)
 
     #Some prep to get the bounds:
-    lat_b_out = np.zeros(in_shape[0]+1)
-    lon_b_out = weights.xv_b.data[:in_shape[1]+1, 0]
-    lat_b_out[:-1] = weights.yv_b.data[np.arange(in_shape[0])*in_shape[1],0]
+    lat_b_out = np.zeros(out_shape[0]+1)
+    lon_b_out = weights.xv_b.data[:out_shape[1]+1, 0]
+    lat_b_out[:-1] = weights.yv_b.data[np.arange(out_shape[0])*out_shape[1],0]
     lat_b_out[-1] = weights.yv_b.data[-1,-1]
 
     dummy_in = xr.Dataset(
@@ -150,4 +150,12 @@ def regrid_se_data(regridder, data_to_regrid):
         )
     regridded = regridder(updated.rename({"dummy": "lat", "lndgrid": "lon"}))
     return regridded
+
+def make_regular_grid_regridder(regrid_start, regrid_target, method= "bilinear"):
+    return xesmf.Regridder(
+        regrid_start,
+        regrid_target,
+        method = method,
+        periodic = True
+    )
 

@@ -40,7 +40,7 @@ def clean_empty_folders_in_tree(root):
     return empty_below
 
 def read_pam_file(pam_file_path):
-    required = {"VAR_LIST_MAIN": list, "SEASONAL_VARSETS":dict, "COMPARE_VARIABLES":list}
+    required = {"VAR_LIST_MAIN": list, "SEASONAL_VARSETS":dict, "COMPARE_VARIABLES":list, "OBSERVATION_COMPARISON":dict}
     try:
         with open(pam_file_path, "r") as jsonfile:
             data = json.load(jsonfile)
@@ -54,6 +54,9 @@ def read_pam_file(pam_file_path):
         if elem not in data.keys():
             if (elem == "COMPARE_VARIABLES") and ("VAR_LIST_MAIN" in data.keys()):
                 data["COMPARE_VARIABLES"] = data["VAR_LIST_MAIN"]
+            elif (elem == "OBSERVATION_COMPARISON"):
+                data["OBSERVATION_COMPARISON"] = None
+                continue
             else:
                 raise ValueError(f"{pam_file_path} must include {elem}")
         if not isinstance(data[elem], e_type):

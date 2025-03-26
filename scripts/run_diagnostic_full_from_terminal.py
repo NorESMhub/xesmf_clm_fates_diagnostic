@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../", "src"))
 
-from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics
+from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics, ilamb_configurations
 
 standard_run_dict = {
     "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
@@ -106,6 +106,12 @@ if len(glob.glob(f"{run_path}*.nc")) < 1:
     print(f"path {run_path} contains no netcdf files")
     print_help_message()
 
+ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_CLMFATES_SP.cfg")
+print(ilamb_cfg)
+print(ilamb_cfg.data_root)
+print(ilamb_cfg.configurations)
+#sys.exit(4)
+
 run_dict = read_optional_arguments(sys.argv[2:])
 
 print(f"All set, setting up to run diagnostics on {run_path} using options:")
@@ -124,6 +130,8 @@ diagnostic = XesmfCLMFatesDiagnostics(
 print("Standard diagnostics:")
 #print(diagnostic.find_case_year_range())
 
+
+#sys.exit(4)
 diagnostic.make_all_plots_and_tables()
 
 if run_dict["compare"] is None:
@@ -146,3 +154,6 @@ else:
             print(f"Comparison statistics with {season}")
             diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"])
     print(f"Done, output should be in {run_dict['outpath']}")
+
+if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
+    diagnostic.make_obs_comparisonplots(ilamb_cfg)

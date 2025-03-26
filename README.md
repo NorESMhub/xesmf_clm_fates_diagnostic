@@ -41,10 +41,11 @@ The other arguments are optional:
 If you want this to be viewable by web, choose a web-facing directory. For instance if you have access to the NS9560K account, make a subdirectory with the same name as your username in /datalake/NS9560K/www/diagnostics/noresm/ and make that your outpath, i.e. `outpath=/datalake/NS9560K/www/diagnostics/noresm/username`
 
 `pamfile_path` is the path to a parameterfile in which you can specify which variables to plot in the various plots. 
-This file should be a json-file containing the three keyword arguments:
+This file should be a json-file containing the three (four) keyword arguments:
 * VAR_LIST_MAIN - and this should be followed by the list of main variables to plot on maps and for trends
 * SEASONAL_VARSETS - and this should be followed by a dictionary of named variable sets for which to plot seasonal cycles over the various regions
 * COMPARE_VARIABLES - is optional, if included this should be followed by a list of variables to use to make comparison plots, if not sent but a comparison is still requested, the compare_variables will be taken from VAR_LIST_MAIN
+* OBSERVATION_COMPARISON - is optional, if included this should be followed by a dictionaries with keys variables (with their ilamb-naming) followed by a list of ilamb datasets to which they should be compared. The specified variables must be present in the ilamb configuration file found in the tests/test-data folder, but you can expand that file with more variable specifications if you wish. The parameter file short_pams.json in the scripts folder includes an example of this section that will give comparison plots for lai, hfls, hfss and gpp.
 If the no pamfile argument is sent, the file standard_pams.json  is used. Feel free to copy that file to use as a template when making your own parameterfile, but we recommend not editing the file itself.
 
 With command line arguments, you can also control the comparison output

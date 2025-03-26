@@ -15,7 +15,7 @@ import cartopy.crs as ccrs
 
 from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
-from  .misc_help_functions import get_unit_conversion_and_new_label
+from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
@@ -40,6 +40,7 @@ class XesmfCLMFatesDiagnostics:
         self.filelist = self.get_clm_h0_filelist()
         self.filelist.sort()
         self.regridder = make_generic_regridder(self.weightfile, self.filelist[0])
+        self.regrid_target = make_regridding_target_from_weightfile(self.weightfile, self.filelist[0])
         if casename is None:
             self.casename = ".".join(self.filelist[0].split("/")[-1].split(".")[:-4])
         else:
@@ -102,6 +103,14 @@ class XesmfCLMFatesDiagnostics:
         }
         setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
         return
+    
+    def setup_folders_for_observation_plots(self, season):
+        subfolder_structure = {
+            "OBS_comparison": season
+        }
+        setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
+        return f"{self.outdir}/OBS_comparison/{season}"       
+
 
     #def clean_out_empty_folders(self):
     #    clean_empty_folders_in_tree(self.outdir)
@@ -541,3 +550,83 @@ class XesmfCLMFatesDiagnostics:
                     self.unit_dict[vrm] = read[vrm].attrs["units"]
                 else:
                     self.unit_dict[vrm] = "No unit"
+
+
+    def make_obs_comparisonplots(
+        self, ilamb_cfgs, variables_obs_list=None, season="ANN", year_range_in=None
+    ):
+        if variables_obs_list is None:
+            if self.var_pams["OBSERVATION_COMPARISON"] is None:
+                print("This XesmfCLMFatesDiagnostics instance has no preprescribed observation comparison dataset")
+                print("An explicit dictionary of variables and datasets to compare must be sent to get observational comparison plots")
+                return
+            variables_obs_list = self.var_pams["OBSERVATION_COMPARISON"]
+
+        variables = list(variables_obs_list.keys())
+        varlist = []
+        for var in variables:
+            varname_mod = ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
+            varlist.append(varname_mod)
+        self.add_to_unit_dict(varlist)
+        self.add_to_unit_dict(variables)
+        if year_range_in is None:
+            year_range = self.get_year_range()
+        else:
+            year_range = year_range_in
+        if season == "ANN":
+            outd = self.get_annual_data(year_range, varlist=varlist)
+            season_name = season
+        else:
+            outd = self.get_seasonal_data(season, year_range, varlist=varlist)
+            season_name = SEASONS[season]
+        fig_dir = self.setup_folders_for_observation_plots(season_name)
+        for var in variables:
+            ilamb_cfgs.print_var_dat(var)
+            varname_mod =  ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
+            unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[varname_mod])
+            print(f"{var}/{varname_mod} has unit conversion: {unit_conversion_factor} and new unit is {unit_to_print}")
+            for obs_dataset in variables_obs_list[var]:
+                to_plot_obs = ilamb_cfgs.get_data_for_map_plot(var, obs_dataset, self.regrid_target, season = season_name)
+                
+                if to_plot_obs is None:
+                    print(f"Comparison for {var} to {obs_dataset} is currently unsupported for {season_name}")
+                    continue
+                fig, axs = plt.subplots(
+                    nrows=1,
+                    ncols=3,
+                    figsize=(30, 10),
+                    subplot_kw={"projection": ccrs.Robinson()},
+                    layout = 'constrained'
+                )
+                to_plot = unit_conversion_factor * regrid_se_data(self.regridder, outd[varname_mod])
+
+
+                ymaxv = np.max((to_plot.max(), to_plot_obs.max()))
+                yminv = np.max((to_plot.min(), to_plot_obs.min()))
+                year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
+                make_bias_plot(
+                    to_plot,
+                    f"{self.casename}",
+                    ax=axs[0],
+                    yminv = yminv,
+                    ymaxv = ymaxv,
+                    xlabel = f"{season} {varname_mod} [{unit_to_print}]"
+                )
+                make_bias_plot(
+                    to_plot_obs,
+                    f"{obs_dataset}",
+                    ax=axs[1],
+                    yminv = yminv,
+                    ymaxv = ymaxv,
+                    xlabel = f"{season} {varname_mod} [{unit_to_print}]"
+                )
+                make_bias_plot(
+                    to_plot - to_plot_obs,
+                    f"{self.casename} - {obs_dataset}",
+                    ax=axs[2], 
+                    cmap = "RdYlBu_r"
+                )
+                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str})")
+                fig.savefig(
+                    f"{fig_dir}/{self.casename}_compare_{obs_dataset}_{season_name}_{varname_mod}_{year_range_str}.png"
+                )
