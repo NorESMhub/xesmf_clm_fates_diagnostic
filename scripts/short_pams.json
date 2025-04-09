@@ -8,7 +8,8 @@
         "LAISUN",
         "FATES_GPP",
         "FSH",
-        "EFLX_LH_TOT"
+        "EFLX_LH_TOT",
+        "FATES_VEGC"
     ],
 
     "SEASONAL_VARSETS":
@@ -20,7 +21,11 @@
     "OBSERVATION_COMPARISON" : {
         "hfss": ["FLUXCOM"],
         "hfls": ["FLUXCOM"],
+        "lai": ["MODIS"],
+        "TOTSOMC_1m": ["NCSCDV22"],
         "FPSN": ["FLUXCOM"],
-        "lai": ["MODIS"]
+        "H2OSNO": ["CanSISE"],
+        "TSA": ["CRU4.02"],
+        "FATES_VEGC": ["ESACCI"]
     }
 }

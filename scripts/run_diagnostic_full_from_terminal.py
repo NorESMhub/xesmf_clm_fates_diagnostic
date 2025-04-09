@@ -156,4 +156,5 @@ else:
     print(f"Done, output should be in {run_dict['outpath']}")
 
 if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
+    print("Doing observational comparisons")
     diagnostic.make_obs_comparisonplots(ilamb_cfg)

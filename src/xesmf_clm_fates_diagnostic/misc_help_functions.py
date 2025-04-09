@@ -31,6 +31,17 @@ def simple_conversion_numbers(base_unit_in, base_unit_out):
     print(f"Basic underlaying unit is not the same ({base_unit_to} vs {base_unit_from}), currently unimplemented")
     return 1
 
+def do_light_unit_string_conversion(unit):
+    if "/" in unit:
+        unit_nom_denom = unit.split("/")
+        unit_nom_denom[1] = unit_nom_denom[1].replace("^", "-")
+        if not unit_nom_denom[1][-1].isdigit():
+            unit_nom_denom[1] = f"{unit_nom_denom[1]}-1"
+        unit = " ".join(unit_nom_denom)
+    if "gC" in unit:
+        unit = unit.replace("gC", "g")
+    return unit
+
 
 
 def get_unit_conversion_and_new_label(orig_unit):

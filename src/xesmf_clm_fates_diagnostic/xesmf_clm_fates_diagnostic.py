@@ -15,7 +15,7 @@ import cartopy.crs as ccrs
 
 from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
-from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string
+from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
@@ -547,10 +547,24 @@ class XesmfCLMFatesDiagnostics:
         for vrm in missing:
             if vrm in read.keys():
                 if "units" in read[vrm].attrs.keys():
-                    self.unit_dict[vrm] = read[vrm].attrs["units"]
+                    self.unit_dict[vrm] = do_light_unit_string_conversion(read[vrm].attrs["units"])
                 else:
                     self.unit_dict[vrm] = "No unit"
 
+    def make_alternate_varlist(self, ilamb_cfgs, variables):
+        varlist = []
+        to_remove = []
+        for var in variables:
+            print(var)
+            varname_mod = ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
+            if varname_mod is not None:
+                varlist.append(varname_mod)
+            else:
+                to_remove.append(var)
+                print(f"No observational and input data match for {var}, skipping")
+        for var in to_remove:
+            variables.remove(var)
+        return varlist, variables
 
     def make_obs_comparisonplots(
         self, ilamb_cfgs, variables_obs_list=None, season="ANN", year_range_in=None
@@ -563,10 +577,7 @@ class XesmfCLMFatesDiagnostics:
             variables_obs_list = self.var_pams["OBSERVATION_COMPARISON"]
 
         variables = list(variables_obs_list.keys())
-        varlist = []
-        for var in variables:
-            varname_mod = ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
-            varlist.append(varname_mod)
+        varlist, variables = self.make_alternate_varlist(ilamb_cfgs, variables)
         self.add_to_unit_dict(varlist)
         self.add_to_unit_dict(variables)
         if year_range_in is None:
@@ -574,6 +585,7 @@ class XesmfCLMFatesDiagnostics:
         else:
             year_range = year_range_in
         if season == "ANN":
+
             outd = self.get_annual_data(year_range, varlist=varlist)
             season_name = season
         else:
@@ -628,5 +640,5 @@ class XesmfCLMFatesDiagnostics:
                 )
                 fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str})")
                 fig.savefig(
-                    f"{fig_dir}/{self.casename}_compare_{obs_dataset}_{season_name}_{varname_mod}_{year_range_str}.png"
+                    f"{fig_dir}/{self.casename}_compare_{varname_mod}_{obs_dataset}_{season_name}_{year_range_str}.png"
                 )
