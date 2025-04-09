@@ -82,9 +82,12 @@ class IlambConfigurations:
     def get_varname_in_file(self, variable, dataset_keys):
         if variable in dataset_keys:
             return variable
-        for alt_name in self.configurations[variable].alt_names:
-            if alt_name in dataset_keys:
-                return alt_name
+        if variable in self.configurations:
+            for alt_name in self.configurations[variable].alt_names:
+                if alt_name in dataset_keys:
+                    return alt_name
+        return None
+        
 
     
     def get_data_for_map_plot(self, variable, oname, regrid_target, season="ANN", year_range = None):
@@ -96,6 +99,9 @@ class IlambConfigurations:
         # TODO: Deal with year_range not None
         if year_range is not None:
             year_range = None
+        if not os.path.exists(self.get_filepath(variable, oname)):
+            print(f"Observation in path {self.get_filepath(variable, oname)} not found, check your configuration files")
+            return None
         dataset = xr.open_dataset(self.get_filepath(variable, oname))
         time_len = len(dataset["time"])
         varname = self.get_varname_in_file(variable, dataset.keys())
@@ -118,6 +124,7 @@ class IlambConfigurations:
         return self.configurations[variable].plot_unit
     
     def print_var_dat(self, variable):
+        print(self.configurations.keys())
         print(f"{self.configurations[variable].name} has alt_names: {self.configurations[variable].alt_names}, and plot unit: {self.configurations[variable].plot_unit}")
         
 
