@@ -52,6 +52,7 @@ class SpinupTestObject:
         return glob.glob(f"{self.datapath}*.clm2.h0.*.nc")
 
     def make_data_for_tests(self):
+        pass
         
 
 

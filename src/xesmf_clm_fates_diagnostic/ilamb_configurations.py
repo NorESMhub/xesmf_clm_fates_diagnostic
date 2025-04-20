@@ -5,6 +5,7 @@ import numpy as np
 import xarray as xr
 
 from .plotting_methods import make_regular_grid_regridder, regrid_se_data
+from .misc_help_functions import get_unit_conversion_from_string
 
 class IlambCompVariable:
 
@@ -13,6 +14,7 @@ class IlambCompVariable:
         self.alt_names = None
         self.obsdatasets = None
         self.plot_unit = None
+        self.obs_limits = [None, None, None]
     
     def set_alt_names(self, alt_name_string):
         alt_names = []
@@ -28,10 +30,17 @@ class IlambCompVariable:
         return oname
     
     def calc_obs_conv_factor(self, oname, plot_unit, tab_unit):
-        self.obsdatasets[oname]["conv_factor"] = "Unimplemented"
+        if plot_unit != tab_unit:
+            unit_conversion, obs_unit =  get_unit_conversion_from_string(tab_unit, plot_unit)
+            self.obsdatasets[oname]["conv_factor"] = unit_conversion
+        else: 
+            self.obsdatasets[oname]["conv_factor"] = 1
     
     def set_plot_unit(self, plot_unit):
         self.plot_unit = plot_unit
+    
+    def set_obs_limits(self, lim_string):
+        self.obs_limits = np.array(lim_string.split(",")).astype(float)
         
 
 def read_ilamb_configurations(cfg_file):
@@ -50,6 +59,8 @@ def read_ilamb_configurations(cfg_file):
                 curr_var = IlambCompVariable(line.split('"')[-2].strip())
             if line.startswith("alternate_vars"):
                 curr_var.set_alt_names(line.split('"')[-2].strip())
+            if line.startswith("limits"):
+                curr_var.set_obs_limits(line.split("=")[-1].strip())
             if line.startswith("source"):
                 curr_oname = curr_var.add_obsdataset(line.split('"')[-2].strip())
             if line.startswith("table_unit"):
@@ -116,9 +127,15 @@ class IlambConfigurations:
         elif year_range is None:
             start_index = np.max(time_len-10, 0) -1
             outd_gn = dataset[varname].isel(time = slice(start_index, time_len)).mean(dim="time")
+        if "missing" in dataset[varname].attrs.keys():
+            print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")
+        outd_gn = outd_gn.where(outd_gn < 1e9)
         regridder = make_regular_grid_regridder(dataset, regrid_target)
-
-        return regridder(outd_gn)
+        output = regridder(outd_gn)
+        regridder.grid_in.destroy()
+        regridder.grid_out.destroy()
+        del regridder
+        return output
         
     def get_variable_plot_unit(self, variable):
         return self.configurations[variable].plot_unit

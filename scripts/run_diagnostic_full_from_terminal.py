@@ -106,10 +106,8 @@ if len(glob.glob(f"{run_path}*.nc")) < 1:
     print(f"path {run_path} contains no netcdf files")
     print_help_message()
 
-ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_CLMFATES_SP.cfg")
-print(ilamb_cfg)
-print(ilamb_cfg.data_root)
-print(ilamb_cfg.configurations)
+ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_CLMFATES.cfg")
+print(ilamb_cfg.configurations["FATES_VEGC"].obs_limits)
 #sys.exit(4)
 
 run_dict = read_optional_arguments(sys.argv[2:])
@@ -134,9 +132,7 @@ print("Standard diagnostics:")
 #sys.exit(4)
 diagnostic.make_all_plots_and_tables()
 
-if run_dict["compare"] is None:
-    print(f"Done, output should be in {run_dict['outpath']}")
-else:
+if not run_dict["compare"] is None:
     print(f"Comparison diagnostics with {run_dict['compare']}")
 
     diasgnostic_other = XesmfCLMFatesDiagnostics(
@@ -153,8 +149,10 @@ else:
         for season in range(4):
             print(f"Comparison statistics with {season}")
             diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"])
-    print(f"Done, output should be in {run_dict['outpath']}")
-
+    
+print(diagnostic.var_pams)
 if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
     print("Doing observational comparisons")
     diagnostic.make_obs_comparisonplots(ilamb_cfg)
+
+print(f"Done, output should be in {run_dict['outpath']}")

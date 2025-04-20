@@ -592,8 +592,10 @@ class XesmfCLMFatesDiagnostics:
             outd = self.get_seasonal_data(season, year_range, varlist=varlist)
             season_name = SEASONS[season]
         fig_dir = self.setup_folders_for_observation_plots(season_name)
+        
         for var in variables:
             ilamb_cfgs.print_var_dat(var)
+            yminv, ymaxv, diffrange = ilamb_cfgs.configurations[var].obs_limits
             varname_mod =  ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
             unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[varname_mod])
             print(f"{var}/{varname_mod} has unit conversion: {unit_conversion_factor} and new unit is {unit_to_print}")
@@ -613,8 +615,6 @@ class XesmfCLMFatesDiagnostics:
                 to_plot = unit_conversion_factor * regrid_se_data(self.regridder, outd[varname_mod])
 
 
-                ymaxv = np.max((to_plot.max(), to_plot_obs.max()))
-                yminv = np.max((to_plot.min(), to_plot_obs.min()))
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
                 make_bias_plot(
                     to_plot,
@@ -635,6 +635,8 @@ class XesmfCLMFatesDiagnostics:
                 make_bias_plot(
                     to_plot - to_plot_obs,
                     f"{self.casename} - {obs_dataset}",
+                    yminv = - diffrange,
+                    ymaxv = diffrange,
                     ax=axs[2], 
                     cmap = "RdYlBu_r"
                 )
