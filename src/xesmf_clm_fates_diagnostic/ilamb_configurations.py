@@ -31,14 +31,13 @@ class IlambCompVariable:
     
     def calc_obs_conv_factor(self, oname, plot_unit, tab_unit):
         if plot_unit != tab_unit:
-            unit_conversion, obs_unit =  get_unit_conversion_from_string(tab_unit, plot_unit)
+            unit_conversion, obs_unit =  get_unit_conversion_from_string(plot_unit, tab_unit)
             self.obsdatasets[oname]["conv_factor"] = unit_conversion
-        else: 
-            self.obsdatasets[oname]["conv_factor"] = 1
     
     def set_plot_unit(self, plot_unit):
         self.plot_unit = plot_unit
-    
+        
+
     def set_obs_limits(self, lim_string):
         self.obs_limits = np.array(lim_string.split(",")).astype(float)
         
@@ -47,7 +46,6 @@ def read_ilamb_configurations(cfg_file):
     ilamb_cfgs = {}
     curr_var = None
     curr_oname = None
-    curr_tab_unit = None
     with open(cfg_file, "r") as cfile:
         for line in cfile:
             #print(line)
@@ -55,7 +53,6 @@ def read_ilamb_configurations(cfg_file):
                 if curr_var is not None:
                     ilamb_cfgs[curr_var.name] = curr_var
                     curr_oname = None
-                    curr_tab_unit = None
                 curr_var = IlambCompVariable(line.split('"')[-2].strip())
             if line.startswith("alternate_vars"):
                 curr_var.set_alt_names(line.split('"')[-2].strip())
@@ -64,11 +61,11 @@ def read_ilamb_configurations(cfg_file):
             if line.startswith("source"):
                 curr_oname = curr_var.add_obsdataset(line.split('"')[-2].strip())
             if line.startswith("table_unit"):
-                curr_tab_unit = line.split('"')[-2].strip()
+                tab_unit = line.split('"')[-2].strip()
+                if curr_var.plot_unit is not None and curr_var.plot_unit != tab_unit:
+                    curr_var.calc_obs_conv_factor(curr_oname, plot_unit, tab_unit)           
             if line.startswith("plot_unit"):
                 plot_unit = line.split('"')[-2].strip()
-                if plot_unit != curr_tab_unit:
-                    curr_var.calc_obs_conv_factor(curr_oname, plot_unit, curr_tab_unit)
                 curr_var.set_plot_unit(plot_unit)
     if curr_var is not None:
         ilamb_cfgs[curr_var.name] = curr_var
@@ -113,6 +110,7 @@ class IlambConfigurations:
         if not os.path.exists(self.get_filepath(variable, oname)):
             print(f"Observation in path {self.get_filepath(variable, oname)} not found, check your configuration files")
             return None
+        
         dataset = xr.open_dataset(self.get_filepath(variable, oname))
         time_len = len(dataset["time"])
         varname = self.get_varname_in_file(variable, dataset.keys())
@@ -135,7 +133,8 @@ class IlambConfigurations:
         regridder.grid_in.destroy()
         regridder.grid_out.destroy()
         del regridder
-        return output
+        print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
+        return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):
         return self.configurations[variable].plot_unit
