@@ -14,7 +14,7 @@ class IlambCompVariable:
         self.alt_names = None
         self.obsdatasets = None
         self.plot_unit = None
-        self.obs_limits = [None, None, None]
+        self.obs_limits = [None, None, None, None]
     
     def set_alt_names(self, alt_name_string):
         alt_names = []
@@ -39,7 +39,8 @@ class IlambCompVariable:
         
 
     def set_obs_limits(self, lim_string):
-        self.obs_limits = np.array(lim_string.split(",")).astype(float)
+        obs_limits = np.array(lim_string.split(",")).astype(float)
+        self.obs_limits = np.append(obs_limits, -obs_limits[-1])
         
 
 def read_ilamb_configurations(cfg_file):

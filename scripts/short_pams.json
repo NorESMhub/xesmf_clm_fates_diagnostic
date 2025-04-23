@@ -11,6 +11,7 @@
         "EFLX_LH_TOT",
         "FATES_VEGC",
         "H2OSNO",
+        "FSDS",
         "TOTSOMC_1m"   
     ],
 
@@ -28,6 +29,7 @@
         "FATES_GPP": ["FLUXCOM"],
         "H2OSNO": ["CanSISE"],
         "TSA": ["CRU4.02"],
-        "FATES_VEGC": ["ESACCI"]
+        "FATES_VEGC": ["ESACCI"],
+        "FSDS": ["CERESed4.2"]
     }
 }
