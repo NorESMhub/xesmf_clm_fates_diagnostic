@@ -12,24 +12,28 @@
         "FATES_VEGC",
         "H2OSNO",
         "FSDS",
+        "FSR", 
+        "FSA", 
         "TOTSOMC_1m"   
     ],
 
     "SEASONAL_VARSETS":
     {
-        "landf": ["TSA", "RAIN", "SNOW", "LAISUN"]
+        "landf": ["TSA", "RAIN", "SNOW", "TLAI"]
     },
     "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"],
 
     "OBSERVATION_COMPARISON" : {
         "hfss": ["FLUXCOM"],
         "hfls": ["FLUXCOM"],
-        "lai": ["MODIS"],
-        "TOTSOMC_1m": ["NCSCDV22"],
+        "lai": ["MODIS", "AVHRR"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
         "FATES_GPP": ["FLUXCOM"],
         "H2OSNO": ["CanSISE"],
         "TSA": ["CRU4.02"],
-        "FATES_VEGC": ["ESACCI"],
-        "FSDS": ["CERESed4.2"]
+        "FATES_VEGC": ["Saatchi2011", "Thurner", "NBCD2000", "Tropical"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
     }
 }
