@@ -31,6 +31,8 @@
         "FATES_GPP": ["FLUXCOM"],
         "H2OSNO": ["CanSISE"],
         "TSA": ["CRU4.02"],
+        "RAIN": ["CMAPv1904"],
+        "SNOW": ["CMAPv1904"],
         "FATES_VEGC": ["Saatchi2011", "Thurner", "NBCD2000", "Tropical"],
         "rsus": ["CERESed4.2", "GEWEX.SRB"],
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
