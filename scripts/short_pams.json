@@ -19,7 +19,7 @@
 
     "SEASONAL_VARSETS":
     {
-        "landf": ["TSA", "RAIN", "SNOW", "TLAI"]
+        "landf": ["TSA", "RAIN", "SNOW", "TLAI", "FSH", "EFLX_LH_TOT", "FATES_GPP", "H2OSNO"]
     },
     "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS"],
 
