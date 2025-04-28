@@ -117,7 +117,7 @@ class IlambConfigurations:
         varname = self.get_varname_in_file(variable, dataset.keys())
         if time_len%12 != 0 and season != "ANN":
             return None
-        if time_len%12 == 1:
+        if time_len%12 == 0:
             #if year_range is None:
                 #year_range = range(np.max(time_len-120, 0), time_len)
             start_index = int(np.max(time_len-120, 0)) -1
