@@ -130,7 +130,7 @@ print("Standard diagnostics:")
 
 
 #sys.exit(4)
-diagnostic.make_all_plots_and_tables()
+diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
 
 if not run_dict["compare"] is None:
     print(f"Comparison diagnostics with {run_dict['compare']}")

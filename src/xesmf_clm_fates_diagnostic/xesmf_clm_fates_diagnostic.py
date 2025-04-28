@@ -281,7 +281,7 @@ class XesmfCLMFatesDiagnostics:
                 outd_months = xr.concat([outd_months, outd], dim="time")
         return outd_months
 
-    def make_all_plots_and_tables(self, year_range=None):
+    def make_all_plots_and_tables(self, year_range=None, ilamb_cfgs = None):
         # TODO: Handle different year_range
         self.make_global_yearly_trends(year_range)
 
@@ -297,7 +297,7 @@ class XesmfCLMFatesDiagnostics:
             )
         for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
 
-            self.make_all_regional_timeseries(year_range, varset, varsetname)
+            self.make_all_regional_timeseries(year_range, varset, varsetname, ilamb_cfgs=ilamb_cfgs)
 
     def get_year_range(self):
         year_start, year_end, files_missing = self.find_case_year_range()
@@ -309,7 +309,7 @@ class XesmfCLMFatesDiagnostics:
         return year_range
 
     def make_timeseries_plots_for_varlist(
-        self, outd, varlist, region_df, year_range_string, varsetname
+        self, outd, varlist, region_df, year_range_string, varsetname, ilamb_cfgs = None
     ):
         self.add_to_unit_dict(varlist)
         figs = []
@@ -320,7 +320,12 @@ class XesmfCLMFatesDiagnostics:
             figs.append([fig, axs])
         print(varlist)
         for varnum, var in enumerate(varlist):
-            outd_regr = regrid_se_data(self.regridder, outd[var])
+            if ilamb_cfgs is None:
+                unit_conversion_factor = 1
+                unit_to_print = self.unit_dict[var]
+            else: 
+                unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[var])
+            outd_regr = unit_conversion_factor * regrid_se_data(self.regridder, outd[var])
             for region, region_info in region_df.iterrows():
                 if rownum < 2:
                     axnow = figs[region][1][varnum % 2]
@@ -334,7 +339,7 @@ class XesmfCLMFatesDiagnostics:
                 weighted_data = crop.weighted(weights)
                 ts_data = weighted_data.mean(["lon", "lat"])
 
-                shift, ylabel = get_unit_conversion_and_new_label(self.unit_dict[var])
+                shift, ylabel = get_unit_conversion_and_new_label(unit_to_print)
                 axnow.plot(range(12), ts_data + shift)
                 axnow.set_xticks(ticks=range(12), labels=MONTHS)
                 axnow.set_title(var)
@@ -348,7 +353,7 @@ class XesmfCLMFatesDiagnostics:
                 f"{self.outdir}/seasonal_cycle/{varsetname}/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
             )
 
-    def make_all_regional_timeseries(self, year_range, varlist, varsetname):
+    def make_all_regional_timeseries(self, year_range, varlist, varsetname, ilamb_cfgs= None):
         self.setup_folders_for_seasonal_cycle_plots(varsetname)
         if self.region_def:
             region_ds = xr.open_dataset(self.region_def)
@@ -378,6 +383,7 @@ class XesmfCLMFatesDiagnostics:
             region_df=region_df,
             year_range_string=f"{year_range[0]}-{year_range[-1]}",
             varsetname=varsetname,
+            ilamb_cfgs = ilamb_cfgs
         )
 
     def make_global_yearly_trends(self, varlist = None, year_range = None):

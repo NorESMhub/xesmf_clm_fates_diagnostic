@@ -148,7 +148,13 @@ class IlambConfigurations:
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):
-        return self.configurations[variable].plot_unit
+        if variable in self.configurations.keys():
+            return self.configurations[variable].plot_unit
+        for ilamb_varname, ilamb_var in self.configurations.items():
+            if ilamb_var.alt_names is None:
+                continue
+            if variable in ilamb_var.alt_names:
+                return self.configurations[ilamb_varname].plot_unit
     
     def print_var_dat(self, variable):
         print(self.configurations.keys())
