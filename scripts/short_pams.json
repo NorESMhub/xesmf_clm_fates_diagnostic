@@ -30,7 +30,7 @@
         "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
         "FATES_GPP": ["FLUXCOM"],
         "H2OSNO": ["CanSISE"],
-        "TSA": ["CRU4.02"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
         "RAIN": ["CMAPv1904"],
         "SNOW": ["CMAPv1904"],
         "FATES_VEGC": ["Saatchi2011", "Thurner", "NBCD2000", "Tropical"],
