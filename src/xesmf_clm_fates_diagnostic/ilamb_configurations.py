@@ -32,10 +32,16 @@ class IlambCompVariable:
     def calc_obs_conv_factor(self, oname, plot_unit, tab_unit):
         if plot_unit != tab_unit:
             unit_conversion, obs_unit =  get_unit_conversion_from_string(plot_unit, tab_unit)
+            #print(f"For {oname} with table_unit {tab_unit} and plot_unit {plot_unit} we get conversion factor {unit_conversion} to get obs_unit {obs_unit}")
             self.obsdatasets[oname]["conv_factor"] = unit_conversion
     
-    def set_plot_unit(self, plot_unit):
-        self.plot_unit = plot_unit
+    def set_plot_unit(self, plot_unit, oname):
+        if self.plot_unit is None:
+            self.plot_unit = plot_unit
+        else:
+            tab_unit = self.plot_unit
+            self.plot_unit = plot_unit
+            self.calc_obs_conv_factor(oname, plot_unit, tab_unit)
         
 
     def set_obs_limits(self, lim_string):
@@ -55,6 +61,7 @@ def read_ilamb_configurations(cfg_file):
                     ilamb_cfgs[curr_var.name] = curr_var
                     curr_oname = None
                 curr_var = IlambCompVariable(line.split('"')[-2].strip())
+                #print(curr_var.name)
             if line.startswith("alternate_vars"):
                 curr_var.set_alt_names(line.split('"')[-2].strip())
             if line.startswith("limits"):
@@ -63,11 +70,14 @@ def read_ilamb_configurations(cfg_file):
                 curr_oname = curr_var.add_obsdataset(line.split('"')[-2].strip())
             if line.startswith("table_unit"):
                 tab_unit = line.split('"')[-2].strip()
+                #print(f"Now processing {tab_unit} for {curr_oname} and {curr_var.name} that has ")
                 if curr_var.plot_unit is not None and curr_var.plot_unit != tab_unit:
-                    curr_var.calc_obs_conv_factor(curr_oname, plot_unit, tab_unit)           
+                    curr_var.calc_obs_conv_factor(curr_oname, plot_unit, tab_unit)
+                elif curr_var.plot_unit is None:
+                    curr_var.set_plot_unit(tab_unit, curr_oname)         
             if line.startswith("plot_unit"):
                 plot_unit = line.split('"')[-2].strip()
-                curr_var.set_plot_unit(plot_unit)
+                curr_var.set_plot_unit(plot_unit, curr_oname)
     if curr_var is not None:
         ilamb_cfgs[curr_var.name] = curr_var
     return ilamb_cfgs
