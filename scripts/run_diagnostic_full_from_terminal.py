@@ -11,7 +11,7 @@ from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics, ilamb_configura
 standard_run_dict = {
     "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
     "outpath" : "figs/",
-    "pamfile" : f"{os.path.dirname(__file__)}/standard_pams.json",
+    "pamfile" : f"{os.path.dirname(__file__)}/short_pams.json",
     "compare": None,
     "year_range_compare": None, 
 }
@@ -122,7 +122,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
     run_dict["weight"],
     run_dict["pamfile"],
     outdir = run_dict["outpath"],
-    region_def="/projects/NS9560K/diagnostics/noresm/packages/CLM_DIAG/code/resources/region_definitions.nc",
+    region_def="region_def_improved.nc",
 )
 
 print("Standard diagnostics:")
@@ -131,6 +131,7 @@ print("Standard diagnostics:")
 
 #sys.exit(4)
 diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
+#sys.exit(4)
 
 if not run_dict["compare"] is None:
     print(f"Comparison diagnostics with {run_dict['compare']}")

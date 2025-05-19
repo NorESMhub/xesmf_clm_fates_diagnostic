@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 
 from .plotting_methods import make_regular_grid_regridder, regrid_se_data
-from .misc_help_functions import get_unit_conversion_from_string
+from .misc_help_functions import get_unit_conversion_from_string, get_unit_conversion_and_new_label
 
 class IlambCompVariable:
 
@@ -106,7 +106,35 @@ class IlambConfigurations:
                 if alt_name in dataset_keys:
                     return alt_name
         return None
+    
+    def get_vaname_in_ilamb_cfgs(self, variable):
+        if variable in self.configurations:
+            return variable
+        for ilambvar, cfgs in self.configurations.items():
+            if cfgs.alt_names is None:
+                continue
+            if variable in cfgs.alt_names:
+                return ilambvar
+        return None
         
+    def get_monthly_mean_timeslice_dataset_for_variable_obs(self, variable, oname, year_range=None, season="ANN"):
+        dataset = xr.open_dataset(self.get_filepath(variable, oname))
+        time_len = len(dataset["time"])
+        varname = self.get_varname_in_file(variable, dataset.keys())
+        if time_len%12 != 0:
+            return None
+      
+        #if year_range is None:
+            #year_range = range(np.max(time_len-120, 0), time_len)
+        start_index = int(np.max(time_len-120, 0)) -1
+        outd_gn = dataset[varname].isel(time = slice(start_index, time_len))
+        if "missing" in dataset[varname].attrs.keys():
+            print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")
+        outd_gn = outd_gn.where(outd_gn < 1e9)
+
+        monthly_means = outd_gn.groupby('time.month').mean('time')
+        print(f"Mean value of {monthly_means.mean().values} and conversion factor {self.configurations[variable].obsdatasets[oname]['conv_factor']}")
+        return monthly_means * self.configurations[variable].obsdatasets[oname]["conv_factor"]
 
     
     def get_data_for_map_plot(self, variable, oname, regrid_target, season="ANN", year_range = None):
@@ -139,12 +167,12 @@ class IlambConfigurations:
         if "missing" in dataset[varname].attrs.keys():
             print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")
         outd_gn = outd_gn.where(outd_gn < 1e9)
-        regridder = make_regular_grid_regridder(dataset, regrid_target)
+        regridder = make_regular_grid_regridder(outd_gn, regrid_target)
         output = regridder(outd_gn)
         regridder.grid_in.destroy()
         regridder.grid_out.destroy()
         del regridder
-        print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
+        #print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):
@@ -155,6 +183,62 @@ class IlambConfigurations:
                 continue
             if variable in ilamb_var.alt_names:
                 return self.configurations[ilamb_varname].plot_unit
+            
+    
+    def add_seasonal_obsdata_to_axis(self, figs, varlist, region_df, obs_comp_dict):
+        rownum = int(np.ceil(len(varlist) / 2))
+        print(obs_comp_dict)
+        #sys.exit(4)
+        for varnum, variable in enumerate(varlist):
+            #varname = self.get_varname_in_file(variable)
+            if variable is None:
+                continue
+            altname = self.get_vaname_in_ilamb_cfgs(variable)
+            if altname is None:
+                continue
+            if altname not in obs_comp_dict:
+                continue
+            yminv, ymaxv, diffrange, negdiffrange = self.configurations[altname].obs_limits
+            print(altname)
+            for oname in obs_comp_dict[altname]:
+                print(oname)
+                outd = self.get_monthly_mean_timeslice_dataset_for_variable_obs(altname, oname)
+                if altname == "TSA" and outd.mean()> 200:
+                    outd = outd - 273.15
+                #shift, ylabel = get_unit_conversion_and_new_label(outd.attrs["units"])
+                #print(f"{altname} and shift: {shift}")
+                #if oname == "FLUXCOM":
+                #    print(f"{outd.lat.values}")
+                #    print(f"{outd.lon.values}")
+                for region, region_info in region_df.iterrows():
+                    #print(f"{region}: {region_info}")
+                    if rownum < 2:
+                        axnow = figs[region][1][varnum % 2]
+                    else: 
+                        axnow = figs[region][1][varnum // 2, varnum % 2]
+                    crop = outd.sel(
+                        lat=(outd.lat >= region_info["BOX_S"]) & (outd.lat <= region_info["BOX_N"])
+                        #lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
+                    )
+                    if region_info["BOX_W"]%360 > region_info["BOX_E"]%360:
+                        crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) | (crop.lon%360 <=region_info["BOX_E"]%360))
+                    elif region_info["BOX_W"]%360 == region_info["BOX_E"]%360:
+                        crop = crop
+                    else:
+                        crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) & (crop.lon%360 <=region_info["BOX_E"]%360))
+                    #print(region_info)
+                    #if region_info['PTITSTR'].strip() == 'Global' and oname == "FLUXCOM":
+                    #    print(crop.lat.values)
+                    #    print(crop.lon.values)
+                    weights = np.cos(np.deg2rad(crop.lat))
+                    weighted_data = crop.weighted(weights)
+                    ts_data = weighted_data.mean(["lon", "lat"])
+                    axnow.plot(range(12), ts_data, label=oname, ls='--')
+                    axnow.set_title(f"{variable} vs {', '.join(obs_comp_dict[altname])}")
+                    if yminv is not None and "pr" in self.configurations[altname].alt_names:
+                        axnow.set_ylim(yminv, ymaxv)
+            
+
     
     def print_var_dat(self, variable):
         print(self.configurations.keys())

@@ -283,15 +283,15 @@ class XesmfCLMFatesDiagnostics:
 
     def make_all_plots_and_tables(self, year_range=None, ilamb_cfgs = None):
         # TODO: Handle different year_range
-        self.make_global_yearly_trends(year_range)
-
         if year_range is None:
             year_range = self.get_year_range()
+        
+        self.make_global_yearly_trends(year_range=year_range)
         outd = self.get_annual_data(year_range)
 
         self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
         for season in range(4):
-            outd = self.get_seasonal_data(season, year_range)
+            #outd = self.get_seasonal_data(season, year_range)
             self.plot_all_the_variables_on_map(
                 outd, year_range, plottype=SEASONS[season]
             )
@@ -307,10 +307,41 @@ class XesmfCLMFatesDiagnostics:
         else:
             raise ValueError(f"Files are missing in the year range from {year_start}, {year_end}") 
         return year_range
+    
+    def setup_seasonal_cycle_plots_and_add_data_for_varlist(
+            self, varlist, region_df, year_range_string, varsetname, ilamb_cfgs
+    ):
+        figs = []
+        rownum = int(np.ceil(len(varlist) / 2))        
+        for i in range(region_df.shape[0]):
+            fig, axs = plt.subplots(ncols=2, nrows=rownum)
+            figs.append([fig, axs])
+        print(varlist)
+        for varnum, var in enumerate(varlist):
+            for region, region_info in region_df.iterrows():
+                if rownum < 2:
+                    axnow = figs[region][1][varnum % 2]
+                else: 
+                    axnow = figs[region][1][varnum // 2, varnum % 2]
+                axnow.set_xticks(ticks=range(12), labels=MONTHS)
+                axnow.set_title(var)
+                axnow.set_ylabel(ylabel)
+
+        # Add data to plots
+        for region, region_info in region_df.iterrows():
+            figs[region][0].suptitle(
+                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
+            )
+            figs[region][0].tight_layout()
+            figs[region][0].savefig(
+                f"{self.outdir}/seasonal_cycle/{varsetname}/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
+            )
 
     def make_timeseries_plots_for_varlist(
         self, outd, varlist, region_df, year_range_string, varsetname, ilamb_cfgs = None
     ):
+        print("making regional seasonal cycle plots")
+        print(ilamb_cfgs)
         self.add_to_unit_dict(varlist)
         figs = []
         rownum = int(np.ceil(len(varlist) / 2))
@@ -325,30 +356,43 @@ class XesmfCLMFatesDiagnostics:
                 unit_to_print = self.unit_dict[var]
             else: 
                 unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[var])
+            shift, ylabel = get_unit_conversion_and_new_label(unit_to_print)
             outd_regr = unit_conversion_factor * regrid_se_data(self.regridder, outd[var])
             for region, region_info in region_df.iterrows():
                 if rownum < 2:
                     axnow = figs[region][1][varnum % 2]
                 else: 
                     axnow = figs[region][1][varnum // 2, varnum % 2]
+
                 crop = outd_regr.sel(
                     lat=slice(region_info["BOX_S"], region_info["BOX_N"]),
-                    lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
+                    #lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
                 )
+                if region_info["BOX_W"]%360 > region_info["BOX_E"]%360:
+                    crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) | (crop.lon%360 <=region_info["BOX_E"]%360))
+                elif region_info["BOX_W"]%360 == region_info["BOX_E"]%360:
+                        crop = crop
+                else:
+                    crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) & (crop.lon%360 <=region_info["BOX_E"]%360)) 
+
                 weights = np.cos(np.deg2rad(crop.lat))
                 weighted_data = crop.weighted(weights)
                 ts_data = weighted_data.mean(["lon", "lat"])
 
-                shift, ylabel = get_unit_conversion_and_new_label(unit_to_print)
-                axnow.plot(range(12), ts_data + shift)
+                
+                axnow.plot(range(12), ts_data + shift, label = "mod")
                 axnow.set_xticks(ticks=range(12), labels=MONTHS)
                 axnow.set_title(var)
                 axnow.set_ylabel(ylabel)
+        if (ilamb_cfgs is not None) and (self.var_pams["OBSERVATION_COMPARISON"] is not None):
+            print("Adding ilamb observations")
+            ilamb_cfgs.add_seasonal_obsdata_to_axis(figs, varlist, region_df, self.var_pams["OBSERVATION_COMPARISON"])
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
                 f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
             )
             figs[region][0].tight_layout()
+            axnow.legend()
             figs[region][0].savefig(
                 f"{self.outdir}/seasonal_cycle/{varsetname}/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
             )
@@ -362,15 +406,13 @@ class XesmfCLMFatesDiagnostics:
                 index=region_df.index[::-1]
             )  # , inplace=True)
             region_df = region_df.astype({"PTITSTR": str, "BOXSTR": str})
-            #print(region_df)
-            #print(region_df.shape)
         else:
             region_df = pd.Dataset(
                 data={
                     "BOX_S": -100.0,
                     "BOX_N": 100.0,
-                    "BOX_W": -200.0,
-                    "BOX_E": 200.0,
+                    "BOX_W": -180.0,
+                    "BOX_E": 180.0,
                     "PS_ID": "Global",
                     "PTITSTR": "Global",
                     "BOXSTR": "(90S-90N,180W-180E)",
@@ -385,6 +427,9 @@ class XesmfCLMFatesDiagnostics:
             varsetname=varsetname,
             ilamb_cfgs = ilamb_cfgs
         )
+        # add other models?
+
+        # Add observations
 
     def make_global_yearly_trends(self, varlist = None, year_range = None):
         if varlist is None:
@@ -392,6 +437,7 @@ class XesmfCLMFatesDiagnostics:
         if year_range is not None:
             yr_start = year_range[0]
             yr_end = year_range[1]
+            missing = False
         else:
             yr_start, yr_end, missing = self.find_case_year_range()
             year_range =np.arange(yr_start, yr_end + 1)
@@ -403,6 +449,7 @@ class XesmfCLMFatesDiagnostics:
         weights = None
         
         if not missing:
+            print(varlist)
             outd = self.get_annual_mean_ts(year_range, varlist=varlist)
             for varnum, var in enumerate(varlist):
                 outd_regr = regrid_se_data(self.regridder, outd[var])
