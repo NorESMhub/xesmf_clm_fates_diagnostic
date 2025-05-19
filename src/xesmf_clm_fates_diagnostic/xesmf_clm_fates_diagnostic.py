@@ -303,7 +303,7 @@ class XesmfCLMFatesDiagnostics:
         year_start, year_end, files_missing = self.find_case_year_range()
         # TODO: Deal with missing files, also for different year_range
         if not files_missing:
-            year_range = np.arange(max(year_start, year_end - 10), year_end + 1)
+            year_range = np.arange(max(year_start, year_end - 20), year_end + 1)
         else:
             raise ValueError(f"Files are missing in the year range from {year_start}, {year_end}") 
         return year_range
@@ -365,7 +365,7 @@ class XesmfCLMFatesDiagnostics:
                     axnow = figs[region][1][varnum // 2, varnum % 2]
 
                 crop = outd_regr.sel(
-                    lat=slice(region_info["BOX_S"], region_info["BOX_N"]),
+                    lat=(outd_regr.lat >= region_info["BOX_S"]) & (outd_regr.lat <= region_info["BOX_N"])
                     #lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
                 )
                 if region_info["BOX_W"]%360 > region_info["BOX_E"]%360:

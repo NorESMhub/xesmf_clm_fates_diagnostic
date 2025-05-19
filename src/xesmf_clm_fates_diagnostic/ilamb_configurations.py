@@ -126,7 +126,7 @@ class IlambConfigurations:
       
         #if year_range is None:
             #year_range = range(np.max(time_len-120, 0), time_len)
-        start_index = int(np.max(time_len-120, 0)) -1
+        start_index = int(np.max(time_len-240, 0))
         outd_gn = dataset[varname].isel(time = slice(start_index, time_len))
         if "missing" in dataset[varname].attrs.keys():
             print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")
@@ -158,7 +158,7 @@ class IlambConfigurations:
         if time_len%12 == 0:
             #if year_range is None:
                 #year_range = range(np.max(time_len-120, 0), time_len)
-            start_index = int(np.max(time_len-120, 0)) -1
+            start_index = int(np.max(time_len-120, 0))
             outd_gn = dataset[varname].isel(time = slice(start_index, time_len)).mean(dim="time")
             
         elif year_range is None:
