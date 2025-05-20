@@ -3,11 +3,12 @@ import cartopy.crs as ccrs
 import numpy as np
 import xarray as xr
 import xesmf
+from matplotlib.colors import LogNorm
 
 from  .misc_help_functions import get_unit_conversion_and_new_label
 
 
-def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None):
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None, logscale=False):
     # Use viridis for absolute maps
     print_to_file = False
     if ax is None:
@@ -28,10 +29,12 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
         shift, xlabel = get_unit_conversion_and_new_label(xlabel.split("[")[-1][:-1])
         bias = bias + shift
 
-                       
-
     if (yminv is None) or (ymaxv is None):
-        im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+        if not logscale:
+            im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+        else:
+            bias = bias.where(bias > 0)
+            im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, norm = LogNorm())
     else:
         im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)
               
@@ -59,7 +62,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
         fignamefull=figname+'.png'
         fig.savefig(fignamefull,bbox_inches='tight')
 
-def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu_r'):
+def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu_r', log_plot=False):
     # Use viridis for absolute maps
     fig = plt.figure(figsize=(10, 5))
     # Create a GeoAxes with the PlateCarree projection

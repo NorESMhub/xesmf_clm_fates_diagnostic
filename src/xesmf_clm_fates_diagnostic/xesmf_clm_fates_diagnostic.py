@@ -37,6 +37,8 @@ class XesmfCLMFatesDiagnostics:
         self.datapath = datapath
         self.weightfile = weightfile
         self.var_pams = read_pam_file(pamfile)
+        print(self.var_pams)
+        #sys.exit(4)
         self.filelist = self.get_clm_h0_filelist()
         self.filelist.sort()
         self.regridder = make_generic_regridder(self.weightfile, self.filelist[0])
@@ -203,16 +205,21 @@ class XesmfCLMFatesDiagnostics:
         plottype : str
             Name of plottype to annotate the plot
         """
+
         self.add_to_unit_dict(self.var_pams["VAR_LIST_MAIN"])
         for var in self.var_pams["VAR_LIST_MAIN"]:
             if var in outd.keys():
+                logscale = False
+                if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
+                    logscale = True
                 to_plot = regrid_se_data(self.regridder, outd[var])
                 if "levgrnd" in to_plot.dims or "levsoi" in to_plot.dims:
                     to_plot = to_plot[0, :, :]
                 make_bias_plot(
                     to_plot,
                     f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
-                    xlabel = f"{plottype} {var} [{self.unit_dict[var]}]"
+                    xlabel = f"{plottype} {var} [{self.unit_dict[var]}]",
+                    logscale=logscale
                 )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
@@ -291,7 +298,7 @@ class XesmfCLMFatesDiagnostics:
 
         self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
         for season in range(4):
-            #outd = self.get_seasonal_data(season, year_range)
+            outd = self.get_seasonal_data(season, year_range)
             self.plot_all_the_variables_on_map(
                 outd, year_range, plottype=SEASONS[season]
             )
@@ -541,6 +548,9 @@ class XesmfCLMFatesDiagnostics:
             season_name = SEASONS[season]
             fig_dir = self.setup_folders_for_comparison_plots(other, SEASONS[season])
         for var in variables:
+            logscale = False
+            if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
+                logscale = True
             fig, axs = plt.subplots(
                 nrows=1,
                 ncols=3,
@@ -563,7 +573,8 @@ class XesmfCLMFatesDiagnostics:
                 ax=axs[0],
                 yminv = yminv,
                 ymaxv = ymaxv,
-                xlabel = f"{season} {var} [{self.unit_dict[var]}]"
+                xlabel = f"{season} {var} [{self.unit_dict[var]}]",
+                logscale=logscale
             )
             make_bias_plot(
                 to_plot_other,
@@ -571,7 +582,8 @@ class XesmfCLMFatesDiagnostics:
                 ax=axs[1],
                 yminv = yminv,
                 ymaxv = ymaxv,
-                xlabel = f"{season} {var} [{self.unit_dict[var]}]"
+                xlabel = f"{season} {var} [{self.unit_dict[var]}]",
+                logscale=logscale
             )
             make_bias_plot(
                 to_plot - to_plot_other,
@@ -647,6 +659,8 @@ class XesmfCLMFatesDiagnostics:
         fig_dir = self.setup_folders_for_observation_plots(season_name)
         
         for var in variables:
+            if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
+                logscale = True
             ilamb_cfgs.print_var_dat(var)
             yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
             varname_mod =  ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
@@ -675,7 +689,8 @@ class XesmfCLMFatesDiagnostics:
                     ax=axs[0],
                     yminv = yminv,
                     ymaxv = ymaxv,
-                    xlabel = f"{season} {varname_mod} [{unit_to_print}]"
+                    xlabel = f"{season} {varname_mod} [{unit_to_print}]",
+                    logscale=logscale
                 )
                 make_bias_plot(
                     to_plot_obs,
@@ -683,7 +698,8 @@ class XesmfCLMFatesDiagnostics:
                     ax=axs[1],
                     yminv = yminv,
                     ymaxv = ymaxv,
-                    xlabel = f"{season} {varname_mod} [{unit_to_print}]"
+                    xlabel = f"{season} {varname_mod} [{unit_to_print}]",
+                    logscale=logscale
                 )
                 make_bias_plot(
                     to_plot - to_plot_obs,

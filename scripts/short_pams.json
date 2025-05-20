@@ -14,7 +14,8 @@
         "FSDS",
         "FSR", 
         "FSA", 
-        "TOTSOMC_1m"   
+        "TOTSOMC_1m" ,
+        "DSTFLXT"  
     ],
 
     "SEASONAL_VARSETS":
@@ -37,5 +38,8 @@
         "rsus": ["CERESed4.2", "GEWEX.SRB"],
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
         "FSDS": ["CERESed4.2", "GEWEX.SRB"]
-    }
+    },
+    "LOG_PLOT" : [
+        "DSTFLXT"
+    ]
 }
