@@ -659,6 +659,7 @@ class XesmfCLMFatesDiagnostics:
         fig_dir = self.setup_folders_for_observation_plots(season_name)
         
         for var in variables:
+            logscale = False
             if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
                 logscale = True
             ilamb_cfgs.print_var_dat(var)
