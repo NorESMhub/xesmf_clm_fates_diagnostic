@@ -1,7 +1,7 @@
 #!/bin/bash
+module purge
+module load ESMF/8.6.0-foss-2023a
+module load Miniforge3/24.1.2-0
 conda deactivate
 source deactivate
-module purge
-module load Anaconda3/2022.05
-module load ESMF/8.4.1-intel-2022a
 conda activate /projects/NS9560K/diagnostics/land_xesmf_env/diag_xesmf_env/

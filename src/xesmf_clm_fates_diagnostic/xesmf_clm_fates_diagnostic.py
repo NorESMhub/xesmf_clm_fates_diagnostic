@@ -57,6 +57,10 @@ class XesmfCLMFatesDiagnostics:
             print("Not all requested variables are available in output, ignoring these:")
             print(vars_missing)
 
+    # TODO: Add support for composite variables
+    #def set_composite_variable_dict(self):
+    #    self.composite_variable_dict = {"toa": ["FSNT", "FLNT"]}
+
     def wet_and_cut_varlists(self):
         # TODO: Make sure all items in SEASONAL is also in var_list_main 
         read = xr.open_dataset(self.filelist[0]).keys()
@@ -292,8 +296,9 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Handle different year_range
         if year_range is None:
             year_range = self.get_year_range()
+            year_range_full = self.find_case_year_range()
         
-        self.make_global_yearly_trends(year_range=year_range)
+        self.make_global_yearly_trends(year_range=year_range_full)
         outd = self.get_annual_data(year_range)
 
         self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
