@@ -296,7 +296,8 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Handle different year_range
         if year_range is None:
             year_range = self.get_year_range()
-            year_range_full = self.find_case_year_range()
+            year_range_full  = self.find_case_year_range()
+            year_range_full = np.arange(year_range_full[0], year_range_full[1])
         
         self.make_global_yearly_trends(year_range=year_range_full)
         outd = self.get_annual_data(year_range)

@@ -21,10 +21,7 @@ To run navigate to the folder called scripts (or extend paths for run-scripts to
 ```
 . setup.sh
 ```
-or alternatively, if you are on a nird node that has been updated to use new Betzy modules:
-```
-. setup_updated_node.sh
-```
+
 Then run 
 ```
 python run_diagnostic_full_from_terminal.py path_1 weight=weight_path compare=opt_path_2 outpath=opt_out_path pamfile=pamfile_path
