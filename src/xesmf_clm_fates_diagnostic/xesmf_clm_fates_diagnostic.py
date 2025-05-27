@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 import cartopy.crs as ccrs
 
-from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot
+from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot, make_regridder_regular_to_coarsest_resolution
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
 from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion
 
@@ -542,6 +542,7 @@ class XesmfCLMFatesDiagnostics:
             variables = list(set(self.var_pams["COMPARE_VARIABLES"]).intersection(set(other.var_pams["COMPARE_VARIABLES"])))
         self.add_to_unit_dict(variables)
         year_range, year_range_other = self.get_year_ranges_for_comparison(other, year_range_in)
+        regridder_between, regrid_self_to_other = make_regridder_regular_to_coarsest_resolution(self.regrid_target, other.regrid_target)
 
         if season == "ANN":
             outd = self.get_annual_data(year_range, varlist=variables)
@@ -564,8 +565,14 @@ class XesmfCLMFatesDiagnostics:
                 subplot_kw={"projection": ccrs.Robinson()},
                 layout = 'constrained'
             )
+            # Regridding block
             to_plot = regrid_se_data(self.regridder, outd[var])
             to_plot_other = regrid_se_data(other.regridder, outd_other[var])
+            if regridder_between is not None:
+                if regrid_self_to_other:
+                    to_plot = regridder_between(to_plot)
+                else:
+                    to_plot_other = regridder_between(to_plot_other)
 
             ymaxv = np.max((to_plot.max(), to_plot_other.max()))
             yminv = np.max((to_plot.min(), to_plot_other.min()))
@@ -601,6 +608,12 @@ class XesmfCLMFatesDiagnostics:
             fig.savefig(
                 f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
+        if regridder_between is None:
+            return
+        regridder_between.grid_in.destroy()
+        regridder_between.grid_out.destroy()
+        del regridder_between
+
 
     def find_case_year_range(self):
         year_start = int(self.filelist[0].split(".")[-2].split("-")[0])
