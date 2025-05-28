@@ -176,6 +176,7 @@ class IlambConfigurations:
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):
+        #print(variable)
         if variable in self.configurations.keys():
             return self.configurations[variable].plot_unit
         for ilamb_varname, ilamb_var in self.configurations.items():

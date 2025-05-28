@@ -535,7 +535,7 @@ class XesmfCLMFatesDiagnostics:
 
 
     def make_combined_changeplots(
-        self, other, variables=None, season="ANN", year_range_in=None
+        self, other, variables=None, season="ANN", year_range_in=None, ilamb_cfgs = None
     ):
         fig_dir = self.setup_folders_for_comparison_plots(other, season)
         if variables is None:
@@ -555,6 +555,12 @@ class XesmfCLMFatesDiagnostics:
             season_name = SEASONS[season]
             fig_dir = self.setup_folders_for_comparison_plots(other, SEASONS[season])
         for var in variables:
+            if ilamb_cfgs is None:
+                 unit_conversion_factor = 1
+                 unit_to_print = self.unit_dict[var]
+            else:
+                unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[var])
+            #print(f"{var} has {unit_conversion_factor} and to get {unit_to_print}")
             logscale = False
             if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
                 logscale = True
@@ -566,8 +572,8 @@ class XesmfCLMFatesDiagnostics:
                 layout = 'constrained'
             )
             # Regridding block
-            to_plot = regrid_se_data(self.regridder, outd[var])
-            to_plot_other = regrid_se_data(other.regridder, outd_other[var])
+            to_plot = regrid_se_data(self.regridder, outd[var]) * unit_conversion_factor
+            to_plot_other = regrid_se_data(other.regridder, outd_other[var]) * unit_conversion_factor
             if regridder_between is not None:
                 if regrid_self_to_other:
                     to_plot = regridder_between(to_plot)
@@ -586,7 +592,7 @@ class XesmfCLMFatesDiagnostics:
                 ax=axs[0],
                 yminv = yminv,
                 ymaxv = ymaxv,
-                xlabel = f"{season} {var} [{self.unit_dict[var]}]",
+                xlabel = f"{season} {var} [{unit_to_print}]",
                 logscale=logscale
             )
             make_bias_plot(
@@ -595,7 +601,7 @@ class XesmfCLMFatesDiagnostics:
                 ax=axs[1],
                 yminv = yminv,
                 ymaxv = ymaxv,
-                xlabel = f"{season} {var} [{self.unit_dict[var]}]",
+                xlabel = f"{season} {var} [{unit_to_print}]",
                 logscale=logscale
             )
             make_bias_plot(

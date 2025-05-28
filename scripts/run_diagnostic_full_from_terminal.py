@@ -126,11 +126,11 @@ diagnostic = XesmfCLMFatesDiagnostics(
 )
 
 print("Standard diagnostics:")
-#print(diagnostic.find_case_year_range())
+print(diagnostic.find_case_year_range())
 
 
 #sys.exit(4)
-diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
+#diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
 #sys.exit(4)
 
 if not run_dict["compare"] is None:
@@ -144,12 +144,12 @@ if not run_dict["compare"] is None:
         run_dict["pamfile"],
     )
 
-    diagnostic.make_combined_changeplots(diasgnostic_other, year_range_in=run_dict["year_range_compare"])
+    diagnostic.make_combined_changeplots(diasgnostic_other, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
     if run_dict["compare_seasonal"]:
         print("Seasons true")
         for season in range(4):
             print(f"Comparison statistics with {season}")
-            diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"])
+            diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
     
 print(diagnostic.var_pams)
 if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
