@@ -579,9 +579,13 @@ class XesmfCLMFatesDiagnostics:
                     to_plot = regridder_between(to_plot)
                 else:
                     to_plot_other = regridder_between(to_plot_other)
-
-            ymaxv = np.max((to_plot.max(), to_plot_other.max()))
-            yminv = np.max((to_plot.min(), to_plot_other.min()))
+            if ilamb_cfgs is None:
+                ymaxv = np.max((to_plot.max(), to_plot_other.max()))
+                yminv = np.max((to_plot.min(), to_plot_other.min()))
+                diffrange = None
+                negdiffrange = None
+            else:
+                 yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
             if year_range[0] == year_range_other[0] and year_range[-1] == year_range_other[-1]:
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             else:
@@ -608,7 +612,9 @@ class XesmfCLMFatesDiagnostics:
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
                 ax=axs[2], 
-                cmap = "RdYlBu_r"
+                cmap = "RdYlBu_r",
+                yminv = negdiffrange,
+                ymaxv = diffrange,
             )
             fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})")
             fig.savefig(
