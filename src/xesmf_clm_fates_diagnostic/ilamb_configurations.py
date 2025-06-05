@@ -4,8 +4,8 @@ import os
 import numpy as np
 import xarray as xr
 
-from .plotting_methods import make_regular_grid_regridder, regrid_se_data
-from .misc_help_functions import get_unit_conversion_from_string, get_unit_conversion_and_new_label
+from .plotting_methods import make_regular_grid_regridder
+from .misc_help_functions import get_unit_conversion_from_string, get_unit_conversion_and_new_label, SEASONS
 
 class IlambCompVariable:
 
@@ -137,12 +137,8 @@ class IlambConfigurations:
         return monthly_means * self.configurations[variable].obsdatasets[oname]["conv_factor"]
 
     
-    def get_data_for_map_plot(self, variable, oname, regrid_target, season="ANN", year_range = None):
-        #path = self.get_filepath(variable, oname)
-        # TODO: Implement seasonal
-        if season != "ANN":
-            return None
-        
+    def get_data_for_map_plot(self, variable, oname, regrid_target, season="ANN", year_range = None, clim_length = 20):
+        #path = self.get_filepath(variable, oname)       
         # TODO: Deal with year_range not None
         if year_range is not None:
             year_range = None
@@ -158,11 +154,22 @@ class IlambConfigurations:
         if time_len%12 == 0:
             #if year_range is None:
                 #year_range = range(np.max(time_len-120, 0), time_len)
-            start_index = int(np.max(time_len-120, 0))
-            outd_gn = dataset[varname].isel(time = slice(start_index, time_len)).mean(dim="time")
+            clim_length = int(np.min((clim_length, time_len//12)))
+            start_index = int(np.max((time_len-clim_length*12, 0)))
+            if season == "ANN":
+                t_pick = slice(start_index, time_len)
+            elif season in SEASONS:
+                idx = SEASONS.index(season)
+                in_year_idx = np.mod(idx*3 - 1 + np.arange(3), 12)
+                t_pick = np.array([start_index + yr*12 + mnth for yr in np.arange(clim_length) for mnth in in_year_idx])
+                t_pick.sort()
+            else:
+                pass
+            #print(t_pick)
+            outd_gn = dataset[varname].isel(time = t_pick).mean(dim="time")
             
         elif year_range is None:
-            start_index = np.max(time_len-10, 0) -1
+            start_index = np.max(time_len-clim_length, 0) -1
             outd_gn = dataset[varname].isel(time = slice(start_index, time_len)).mean(dim="time")
         if "missing" in dataset[varname].attrs.keys():
             print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")

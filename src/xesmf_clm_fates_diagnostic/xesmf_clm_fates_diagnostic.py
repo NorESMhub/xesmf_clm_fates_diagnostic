@@ -15,11 +15,9 @@ import cartopy.crs as ccrs
 
 from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot, make_regridder_regular_to_coarsest_resolution
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
-from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion
+from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion, SEASONS
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
-
-SEASONS = ["DJF", "MAM", "JJA", "SON"]
 
 
 #def get_minimal_intersecting_year_range(year_range, year_range_other):

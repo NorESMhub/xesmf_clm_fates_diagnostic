@@ -45,7 +45,8 @@ def print_help_message():
     print("If the years in the two comparison sets are to be different, you need to supply year-year_year-year")
     print("where the first year-year denotes the range for the main dataset, and the second that of the comparison dataset")
     print("compare_seasonal=True")
-    print("Adds seasonal comparison plots, if comparison plotting is included. Yearranges for this will be the same as for annual comparison plots")
+    print("Adds seasonal comparison plots for both observations and comparison to other model output")
+    print(" if comparison plotting and/ or observational comparisons are included. Yearranges for this will be the same as for annual comparison plots")
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 
@@ -150,10 +151,13 @@ if not run_dict["compare"] is None:
         for season in range(4):
             print(f"Comparison statistics with {season}")
             diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
-    
-print(diagnostic.var_pams)
+
 if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
     print("Doing observational comparisons")
     diagnostic.make_obs_comparisonplots(ilamb_cfg)
+    if run_dict["compare_seasonal"]:
+        for season in range(4):
+            print(f"Seasonal observational comparisons with {season}")
+            diagnostic.make_obs_comparisonplots(ilamb_cfg, season=season)
 
 print(f"Done, output should be in {run_dict['outpath']}")

@@ -49,4 +49,4 @@ With command line arguments, you can also control the comparison output
 `compare_from_start` or `compare_from_end` allows you to set the comparison between the runs to consider the `n` first or last years of each of the comparison runs.
 `compare_custom_year_range` gives you the option to choose specific years to compare on the format `yearstart-yearend` if you want the same range from both sets, 
 or `yearstart-yearend_yearstart-yearend` if you want one range for the main dataset, and a different range for the second one.
-`compare_seasonal=True` will add seasonal comparison plots for the same year ranges.
+`compare_seasonal=True` will add seasonal comparison (for both comparison to model output and observations) plots for the same year ranges.

@@ -25,6 +25,8 @@ TIME_UNITS_IN_S = {
     "y" : 365*3600*24
 }
 
+SEASONS = ["DJF", "MAM", "JJA", "SON"]
+
 def simple_conversion_numbers(base_unit_in, base_unit_out):
     if base_unit_in in TIME_UNITS_IN_S and base_unit_out in TIME_UNITS_IN_S:
         return TIME_UNITS_IN_S[base_unit_in] / TIME_UNITS_IN_S [base_unit_out]
