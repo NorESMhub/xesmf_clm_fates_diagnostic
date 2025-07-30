@@ -582,8 +582,13 @@ class XesmfCLMFatesDiagnostics:
                 yminv = np.max((to_plot.min(), to_plot_other.min()))
                 diffrange = None
                 negdiffrange = None
-            else:
+            elif var in ilamb_cfgs.configurations:
                  yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
+            else:
+                ymaxv = np.max((to_plot.max(), to_plot_other.max()))
+                yminv = np.max((to_plot.min(), to_plot_other.min()))
+                diffrange = None
+                negdiffrange = None                
             if year_range[0] == year_range_other[0] and year_range[-1] == year_range_other[-1]:
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             else:
