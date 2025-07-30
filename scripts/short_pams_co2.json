@@ -24,13 +24,14 @@
         "FATES_LEAFC", 
         "FATES_MORTALITY_CFLUX_CANOPY", 
         "BTRAN",
-        "FCO2"
+        "FCO2",
+        "FATES_NEP"
     ],
 
     "SEASONAL_VARSETS":
     {
         "landf": ["TSA", "RAIN", "SNOW", "TLAI", "FSH", "EFLX_LH_TOT", "FATES_GPP", "H2OSNO"],
-        "co2flux": ["FCO2", "FATES_NPP", "FATES_LAI", "FATES_LEAFC", "FATES_MORTALITY_CFLUX_CANOPY", "FATES_VEGC", "BTRAN"]
+        "co2flux": ["FCO2", "FATES_NPP", "FATES_LAI", "FATES_LEAFC", "FATES_MORTALITY_CFLUX_CANOPY", "FATES_VEGC", "BTRAN", "FATES_NEP"]
     },
     "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS", "FCO2"],
     "LOG_PLOT" : [
