@@ -50,14 +50,23 @@ class XesmfCLMFatesDiagnostics:
             outdir = "figs/"
         self.setup_folder_structure(outdir)
         self.unit_dict = {}
+        self.set_composite_variable_dict()
         vars_missing = self.wet_and_cut_varlists()
         if len(vars_missing):
             print("Not all requested variables are available in output, ignoring these:")
             print(vars_missing)
+        print(self.var_pams)
+        print(self.unit_dict)
+        sys.exit(4)
+        #sys.exit(4)
 
-    # TODO: Add support for composite variables
-    #def set_composite_variable_dict(self):
-    #    self.composite_variable_dict = {"toa": ["FSNT", "FLNT"]}
+    # TODO: Make this not hard-coded
+    def set_composite_variable_dict(self):
+        self.composite_variable_dict = {
+            "albedo": [["FSR", "FSDS"], "divide"],
+            "pr": [["RAIN", "SNOW"], "add"],
+            "npp_gpp_fraction":[["FATES_NPP", "FATES_GPP"], "divide"]
+            }
 
     def wet_and_cut_varlists(self):
         # TODO: Make sure all items in SEASONAL is also in var_list_main 
@@ -65,11 +74,26 @@ class XesmfCLMFatesDiagnostics:
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
 
         vars_missing = []
+        vars_needed_for_composites = []
         for list_n in lists_check:
             for item in self.var_pams[list_n]:
                 if item not in read:
-                    vars_missing.append(item)
+                    if item in self.composite_variable_dict:
+                        composit_works = True
+                        for comp_item in self.composite_variable_dict[item][0]:
+                            print(f"Doing composite item {item}")
+                            if comp_item not in read:
+                                composit_works = False
+                                break
+                        if composit_works:
+                            vars_needed_for_composites.extend(self.composite_variable_dict[item][0])
+                        else:
+                          vars_missing.append(item)  
+                    else:
+                        vars_missing.append(item)
             self.var_pams[list_n] = list(set(self.var_pams[list_n]) - set(vars_missing))
+            self.var_pams[list_n] = list(set(self.var_pams[list_n]).union(set(vars_needed_for_composites)))
+
         for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
             for vari in varset:
                 if vari not in read and vari not in vars_missing:
@@ -130,6 +154,27 @@ class XesmfCLMFatesDiagnostics:
         """
         #(f"{self.datapath}*.clm2.h0.*.nc")
         return glob.glob(f"{self.datapath}*.clm2.h0.*.nc")
+    
+    def add_composite_variables(self, outd, varlist_composite):
+        """
+        Add composite variables to outd using existing variables
+
+        Parameters
+        ----------
+        outd : xr.Dataset
+            Dataset of non-composite variables
+        varlist_composite : list
+            List of composite variables
+        """
+        for composite in varlist_composite:
+            if self.composite_variable_dict[composite][1] == "add":
+                outd[composite] = outd[self.composite_variable_dict[composite][0][0]]
+                for i in range(len(self.composite_variable_dict[composite][0]) - 1):
+                    outd[composite] = outd[composite] + outd[self.composite_variable_dict[composite][0][i+1]]
+            if self.composite_variable_dict[composite][1] == "divide":
+                outd[composite] = outd[self.composite_variable_dict[composite][0][0]] / outd[self.composite_variable_dict[composite][0][1]]
+        return outd
+    
 
     def get_annual_data(self, year_range, varlist=None):
         """
@@ -147,16 +192,21 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
+        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        
         for year in year_range:
             for month in range(12):
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
+                outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
                     outd = outd_here
                 else:
                     outd = xr.concat([outd, outd_here], dim="time")
+                
         outd = outd.mean(dim="time")
         return outd
     
@@ -176,11 +226,15 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
+        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+
         for year in year_range:
             outd_yr = None
             for month in range(12):                         
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
+                outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd_yr:
@@ -247,6 +301,9 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
+        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        
         for year in year_range:
             for monthincr in range(3):
 
@@ -257,7 +314,8 @@ class XesmfCLMFatesDiagnostics:
                 mfile = (
                     f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month:02d}.nc"
                 )
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.var_pams["VAR_LIST_MAIN"]]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
+                outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -271,12 +329,15 @@ class XesmfCLMFatesDiagnostics:
         outd_months = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
+        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
         for month in range(12):
             outd = None
             for year in year_range:
                 # print(f"Season: {season}, monthincr: {monthincr}, month: {monthincr}")
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month+1:02d}.nc"
-                outd_here = xr.open_dataset(mfile, engine="netcdf4")[self.var_pams["VAR_LIST_MAIN"]]
+                outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
+                outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -636,6 +697,9 @@ class XesmfCLMFatesDiagnostics:
         files_missing = False
         if len(self.filelist) < (year_end - year_start) * 12:
             files_missing = True
+            print(len(self.filelist))
+            print((year_end - year_start) * 12)
+            print(self.filelist)
         return year_start, year_end, files_missing
 
     def add_to_unit_dict(self, varlist):

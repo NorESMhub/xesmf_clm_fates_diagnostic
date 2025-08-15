@@ -23,7 +23,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
         shrink = 0.7
     else:
         shrink = 0.5
-    
+    #print(figname)
     # Plot the data on the map
     if xlabel is not None:
         shift, xlabel = get_unit_conversion_and_new_label(xlabel.split("[")[-1][:-1])
