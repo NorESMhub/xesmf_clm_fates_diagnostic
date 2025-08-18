@@ -57,7 +57,7 @@ class XesmfCLMFatesDiagnostics:
             print(vars_missing)
         print(self.var_pams)
         print(self.unit_dict)
-        sys.exit(4)
+        #sys.exit(4)
         #sys.exit(4)
 
     # TODO: Make this not hard-coded
@@ -703,6 +703,8 @@ class XesmfCLMFatesDiagnostics:
         return year_start, year_end, files_missing
 
     def add_to_unit_dict(self, varlist):
+        print(varlist)
+        print(self.unit_dict)
         missing = list(set(varlist) - set(self.unit_dict.keys()))
         if len(missing) < 1:
             return
@@ -713,6 +715,28 @@ class XesmfCLMFatesDiagnostics:
                     self.unit_dict[vrm] = do_light_unit_string_conversion(read[vrm].attrs["units"])
                 else:
                     self.unit_dict[vrm] = "No unit"
+            elif vrm in self.composite_variable_dict.keys():
+                factor1 = self.composite_variable_dict[vrm][0][0]
+                if self.composite_variable_dict[vrm][1] == "add":
+                    if factor1 in read.keys():
+                        if "units" in read[factor1].attrs.keys():
+                            self.unit_dict[vrm] = do_light_unit_string_conversion(read[factor1].attrs["units"])
+                        else:
+                            self.unit_dict[vrm] = "No unit"
+                if self.composite_variable_dict[vrm][1] == "divide":
+                    factor2 = self.composite_variable_dict[vrm][0][1]
+                    if factor1 in read.keys() and factor2 in read.keys():
+                        if "units" in read[factor1].attrs.keys() and "units" in read[factor2].attrs.keys():
+                            unit1 = read[factor1].attrs["units"]
+                            unit2 = read[factor2].attrs["units"]
+                            if unit1 == unit2:
+                                self.unit_dict[vrm] = "No unit"
+                            else:
+                                self.unit_dict[vrm] = do_light_unit_string_conversion(f"{unit1}/{unit2}")
+                        else:
+                            self.unit_dict[vrm] = "No unit"                         
+
+
 
     def make_alternate_varlist(self, ilamb_cfgs, variables):
         varlist = []

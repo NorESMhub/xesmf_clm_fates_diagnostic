@@ -1,0 +1,60 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+        "SNOW",
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+        "LAISUN",
+        "FATES_GPP",
+        "FSH",
+        "EFLX_LH_TOT",
+        "FATES_VEGC",
+        "H2OSNO",
+        "FSDS",
+        "FSR", 
+        "FSA", 
+        "TOTSOMC_1m" ,
+        "DSTFLXT",
+        "FATES_NPP", 
+        "FATES_LAI", 
+        "FATES_HET_RESP", 
+        "FATES_AUTORESP", 
+        "FATES_AREA_PLANTS", 
+        "FATES_LEAFC", 
+        "FATES_MORTALITY_CFLUX_CANOPY", 
+        "BTRAN",
+        "FCO2",
+        "FATES_NEP",
+        "FSNO",
+        "albedo",
+        "pr"
+    ],
+
+    "SEASONAL_VARSETS":
+    {
+        "landf": ["TSA", "RAIN", "SNOW", "TLAI", "FSH", "EFLX_LH_TOT", "FATES_GPP", "H2OSNO"],
+        "co2flux": ["FCO2", "FATES_NPP", "FATES_LAI", "FATES_LEAFC", "FATES_MORTALITY_CFLUX_CANOPY", "FATES_VEGC", "BTRAN", "FATES_NEP"]
+    },
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS", "FCO2", "TLAI", "H2OSNO", "FSNO", "albedo", "pr"],
+
+    "OBSERVATION_COMPARISON" : {
+        "hfss": ["FLUXCOM"],
+        "hfls": ["FLUXCOM"],
+        "lai": ["MODIS", "AVHRR"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
+        "FATES_GPP": ["FLUXCOM"],
+        "H2OSNO": ["CanSISE"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "RAIN": ["CMAPv1904"],
+        "SNOW": ["CMAPv1904"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"],
+        "albedo": ["CERESed4.2", "GEWEX.SRB"],
+        "pr": ["CMAPv1904"]
+    },
+    "LOG_PLOT" : [
+        "DSTFLXT"
+    ]
+}
