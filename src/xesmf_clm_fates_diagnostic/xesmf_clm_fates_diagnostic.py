@@ -15,7 +15,7 @@ import cartopy.crs as ccrs
 
 from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot, make_regridder_regular_to_coarsest_resolution
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
-from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion, SEASONS
+from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion, SEASONS, calculate_rmse_from_bias
 
 MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
@@ -402,7 +402,8 @@ class XesmfCLMFatesDiagnostics:
         # Add data to plots
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
-                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
+                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})",
+                size = "x-large"
             )
             figs[region][0].tight_layout()
             figs[region][0].savefig(
@@ -461,7 +462,8 @@ class XesmfCLMFatesDiagnostics:
             ilamb_cfgs.add_seasonal_obsdata_to_axis(figs, varlist, region_df, self.var_pams["OBSERVATION_COMPARISON"])
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
-                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})"
+                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})",
+                size = "xx-large"
             )
             figs[region][0].tight_layout()
             axnow.legend()
@@ -680,7 +682,8 @@ class XesmfCLMFatesDiagnostics:
                 yminv = negdiffrange,
                 ymaxv = diffrange,
             )
-            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})")
+            rmse = calculate_rmse_from_bias(to_plot - to_plot_other)
+            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str}), RMSE = {rmse}", size = "xx-large", y=0.8)
             fig.savefig(
                 f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
@@ -787,6 +790,7 @@ class XesmfCLMFatesDiagnostics:
             ilamb_cfgs.print_var_dat(var)
             yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
             varname_mod =  ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
+            print(var)
             unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[varname_mod])
             print(f"{var}/{varname_mod} has unit conversion: {unit_conversion_factor} and new unit is {unit_to_print}")
             for obs_dataset in variables_obs_list[var]:
@@ -832,7 +836,8 @@ class XesmfCLMFatesDiagnostics:
                     ax=axs[2], 
                     cmap = "RdYlBu_r"
                 )
-                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str})")
+                rmse = calculate_rmse_from_bias(to_plot - to_plot_obs)
+                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse}", size = "xx-large", y=0.8)
                 fig.savefig(
                     f"{fig_dir}/{self.casename}_compare_{varname_mod}_{obs_dataset}_{season_name}_{year_range_str}.png"
                 )

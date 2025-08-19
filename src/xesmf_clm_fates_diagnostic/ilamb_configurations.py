@@ -31,6 +31,7 @@ class IlambCompVariable:
     
     def calc_obs_conv_factor(self, oname, plot_unit, tab_unit):
         if plot_unit != tab_unit:
+            print(f"Variable {self.name} and observations {oname}")
             unit_conversion, obs_unit =  get_unit_conversion_from_string(plot_unit, tab_unit)
             #print(f"For {oname} with table_unit {tab_unit} and plot_unit {plot_unit} we get conversion factor {unit_conversion} to get obs_unit {obs_unit}")
             self.obsdatasets[oname]["conv_factor"] = unit_conversion
@@ -179,7 +180,7 @@ class IlambConfigurations:
         regridder.grid_in.destroy()
         regridder.grid_out.destroy()
         del regridder
-        #print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
+        print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):

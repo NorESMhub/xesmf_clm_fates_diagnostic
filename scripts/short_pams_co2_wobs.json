@@ -34,7 +34,7 @@
     "SEASONAL_VARSETS":
     {
         "landf": ["TSA", "RAIN", "SNOW", "TLAI", "FSH", "EFLX_LH_TOT", "FATES_GPP", "H2OSNO"],
-        "co2flux": ["FCO2", "FATES_NPP", "FATES_LAI", "FATES_LEAFC", "FATES_MORTALITY_CFLUX_CANOPY", "FATES_VEGC", "BTRAN", "FATES_NEP"]
+        "co2flux": ["FCO2", "FATES_NPP", "FATES_LAI", "FATES_LEAFC", "FATES_MORTALITY_CFLUX_CANOPY","BTRAN", "FATES_NEP"]
     },
     "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS", "FCO2", "TLAI", "H2OSNO", "FSNO", "albedo", "pr"],
 
@@ -52,7 +52,8 @@
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
         "FSDS": ["CERESed4.2", "GEWEX.SRB"],
         "albedo": ["CERESed4.2", "GEWEX.SRB"],
-        "pr": ["CMAPv1904"]
+        "pr": ["CMAPv1904"],
+        "FATES_VEGC": ["Saatchi2011", "Thurner", "ESACCI", "Tropical"]
     },
     "LOG_PLOT" : [
         "DSTFLXT"

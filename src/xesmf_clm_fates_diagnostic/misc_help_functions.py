@@ -24,13 +24,20 @@ TIME_UNITS_IN_S = {
     "d" : 3600*24,
     "y" : 365*3600*24
 }
+AREA_UNITS_IN_M2 = {
+    "s" : 1,
+    "h" : 3600,
+    "d" : 3600*24,
+    "y" : 365*3600*24
+}
 
 SEASONS = ["DJF", "MAM", "JJA", "SON"]
 
 def simple_conversion_numbers(base_unit_in, base_unit_out):
     if base_unit_in in TIME_UNITS_IN_S and base_unit_out in TIME_UNITS_IN_S:
         return TIME_UNITS_IN_S[base_unit_in] / TIME_UNITS_IN_S [base_unit_out]
-    print(f"Basic underlaying unit is not the same ({base_unit_to} vs {base_unit_from}), currently unimplemented")
+    print(f"Basic underlaying unit is not the same ({base_unit_in} vs {base_unit_out}), currently unimplemented")
+    #elif base_unit_in
     return 1
 
 def do_light_unit_string_conversion(unit):
@@ -45,8 +52,6 @@ def do_light_unit_string_conversion(unit):
         unit = unit.replace("gC", "g")
     return unit
 
-
-
 def get_unit_conversion_and_new_label(orig_unit):
     shift = 0
     if orig_unit == "K":
@@ -56,11 +61,32 @@ def get_unit_conversion_and_new_label(orig_unit):
         ylabel = orig_unit
     return shift, ylabel
 
+def convert_weird_subunits(unit):
+    if "ha-1" in unit:
+        new_unit = unit.replace("ha-1", "m-2")
+        return new_unit,1.e-4
+    elif "ha" in unit:
+        new_unit = unit.replace("ha", "m^2")
+        return new_unit, 1e4
+    return unit, 1
+
+def deal_with_weird_units_to_and_from(unit_from, unit_to):
+    new_unit_from, mult_from = convert_weird_subunits(unit_from)
+    new_unit_to, mult_to = convert_weird_subunits(unit_to)
+    return new_unit_from, new_unit_to, mult_from / mult_to
+
+
 def unit_convert_single_unit(unit_from, unit_to):
     factor = 1
     if unit_from == unit_to:
         return 1
     # TODO: This implementation assumes no exponent for nominator units
+    multiplicator = 1
+    #print(f"{unit_from:}, {unit_to:}")
+    unit_from, unit_to, multiplicator = deal_with_weird_units_to_and_from(unit_from, unit_to)
+    #print(f"{unit_from:}, {unit_to:}, {multiplicator}")
+    if unit_from == unit_to:
+        return multiplicator
     if "-" in unit_to:
         factor = -int(unit_to.split("-")[-1])
         just_string_to = unit_to.split("-")[0]
@@ -70,9 +96,9 @@ def unit_convert_single_unit(unit_from, unit_to):
         just_string_from = unit_from
     base_unit_to = just_string_to[-1]
     base_unit_from = just_string_from[-1]
-    multiplicator = 1
+
     if base_unit_from != base_unit_to:
-        multiplicator = simple_conversion_numbers(base_unit_from, base_unit_to)
+        multiplicator = multiplicator * simple_conversion_numbers(base_unit_from, base_unit_to)
     if len(just_string_from) > 1:
         from_prefix = UNIT_PREFIXES[just_string_from[0]]
     else:
@@ -81,6 +107,7 @@ def unit_convert_single_unit(unit_from, unit_to):
         to_prefix = UNIT_PREFIXES[just_string_to[0]]
     else:
         to_prefix = 0
+    print((multiplicator*10**((from_prefix-to_prefix)))**factor)
     return (multiplicator*10**((from_prefix-to_prefix)))**factor
 
 
@@ -100,8 +127,6 @@ def get_unit_conversion_from_string(obs_unit, mod_unit):
     if unit_conversion == 1:
         return unit_conversion, mod_unit
     return unit_conversion, obs_unit
-
-
 
 
 def make_regridding_target_from_weightfile(weight_file, filename_exmp):
@@ -136,3 +161,11 @@ def make_regridding_target_from_weightfile(weight_file, filename_exmp):
             }
         )
     return dummy_out
+
+def calculate_rmse_from_bias(bias, weights = None):
+    bias_square = (bias)**2
+    if weights is None:
+        weights = np.cos(np.deg2rad(bias.lat))
+    weighted = bias_square.weighted(weights)
+    rmse = np.sqrt(weighted.mean(["lon", "lat"]).values)
+    return rmse
