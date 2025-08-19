@@ -108,7 +108,9 @@ if len(glob.glob(f"{run_path}*.nc")) < 1:
     print_help_message()
 
 ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_CLMFATES.cfg")
-print(ilamb_cfg.configurations["FATES_VEGC"].obs_limits)
+#print(ilamb_cfg.configurations["FATES_VEGC"].obsdatasets)
+#print(ilamb_cfg.configurations["pr"].obsdatasets)
+
 #sys.exit(4)
 
 run_dict = read_optional_arguments(sys.argv[2:])

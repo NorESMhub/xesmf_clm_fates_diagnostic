@@ -31,6 +31,7 @@ class IlambCompVariable:
     
     def calc_obs_conv_factor(self, oname, plot_unit, tab_unit):
         if plot_unit != tab_unit:
+            print(f"Variable {self.name} and observations {oname}")
             unit_conversion, obs_unit =  get_unit_conversion_from_string(plot_unit, tab_unit)
             #print(f"For {oname} with table_unit {tab_unit} and plot_unit {plot_unit} we get conversion factor {unit_conversion} to get obs_unit {obs_unit}")
             self.obsdatasets[oname]["conv_factor"] = unit_conversion
@@ -96,6 +97,10 @@ class IlambConfigurations:
 
 
     def get_filepath(self, variable, oname):
+        if variable not in self.configurations:
+            return "Not a path"
+        if oname not in self.configurations[variable].obsdatasets:
+            return "Not a path"
         return os.path.join(self.data_root, self.configurations[variable].obsdatasets[oname]["dataloc"])
     
     def get_varname_in_file(self, variable, dataset_keys):
@@ -118,6 +123,8 @@ class IlambConfigurations:
         return None
         
     def get_monthly_mean_timeslice_dataset_for_variable_obs(self, variable, oname, year_range=None, season="ANN"):
+        if not os.path.exists(self.get_filepath(variable, oname)):
+            return None
         dataset = xr.open_dataset(self.get_filepath(variable, oname))
         time_len = len(dataset["time"])
         varname = self.get_varname_in_file(variable, dataset.keys())
@@ -179,7 +186,7 @@ class IlambConfigurations:
         regridder.grid_in.destroy()
         regridder.grid_out.destroy()
         del regridder
-        #print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
+        print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
     def get_variable_plot_unit(self, variable):
@@ -211,6 +218,8 @@ class IlambConfigurations:
             for oname in obs_comp_dict[altname]:
                 print(oname)
                 outd = self.get_monthly_mean_timeslice_dataset_for_variable_obs(altname, oname)
+                if outd is None:
+                    continue
                 if altname == "TSA" and outd.mean()> 200:
                     outd = outd - 273.15
                 #shift, ylabel = get_unit_conversion_and_new_label(outd.attrs["units"])
