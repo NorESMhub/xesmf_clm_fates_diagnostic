@@ -168,4 +168,6 @@ def calculate_rmse_from_bias(bias, weights = None):
         weights = np.cos(np.deg2rad(bias.lat))
     weighted = bias_square.weighted(weights)
     rmse = np.sqrt(weighted.mean(["lon", "lat"]).values)
-    return rmse
+    weighted = bias.weighted(weights)
+    bias_gm = weighted.mean(["lon", "lat"]).values
+    return rmse, bias_gm

@@ -682,8 +682,8 @@ class XesmfCLMFatesDiagnostics:
                 yminv = negdiffrange,
                 ymaxv = diffrange,
             )
-            rmse = calculate_rmse_from_bias(to_plot - to_plot_other)
-            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str}), RMSE = {rmse}", size = "xx-large", y=0.8)
+            rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_other)
+            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
             fig.savefig(
                 f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
             )
@@ -836,8 +836,11 @@ class XesmfCLMFatesDiagnostics:
                     ax=axs[2], 
                     cmap = "RdYlBu_r"
                 )
-                rmse = calculate_rmse_from_bias(to_plot - to_plot_obs)
-                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse}", size = "xx-large", y=0.8)
+                #rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_obs)
+                test = calculate_rmse_from_bias(to_plot - to_plot_obs)
+                print(test)
+                rmse, bias = test
+                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
                 fig.savefig(
                     f"{fig_dir}/{self.casename}_compare_{varname_mod}_{obs_dataset}_{season_name}_{year_range_str}.png"
                 )

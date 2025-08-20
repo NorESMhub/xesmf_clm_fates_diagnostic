@@ -53,7 +53,7 @@
         "FSDS": ["CERESed4.2", "GEWEX.SRB"],
         "albedo": ["CERESed4.2", "GEWEX.SRB"],
         "pr": ["CMAPv1904"],
-        "FATES_VEGC": ["XuSaatchi2011", "Thurner", "ESACCI"]
+        "FATES_VEGC": ["Saatchi2021", "Thurner", "ESACCI"]
     },
     "LOG_PLOT" : [
         "DSTFLXT"
