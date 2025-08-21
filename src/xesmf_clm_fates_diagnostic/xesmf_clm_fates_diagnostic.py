@@ -22,7 +22,15 @@ MONTHS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
 
 #def get_minimal_intersecting_year_range(year_range, year_range_other):
 
-
+def multiply_by_fates_fraction(outd_here):
+    # TODO:
+    if "FATES_FRACTION" not in outd_here.keys():
+        return outd_here
+    for vrm in outd_here.keys():
+        if vrm.startswith("FATES") and vrm != "FATES_FRACTION":
+            outd_here[vrm] = outd_here[vrm] * outd_here["FATES_FRACTION"]
+    return outd_here
+    
 
 class XesmfCLMFatesDiagnostics:
     """
@@ -72,6 +80,8 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Make sure all items in SEASONAL is also in var_list_main 
         read = xr.open_dataset(self.filelist[0]).keys()
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
+        if "FATES_FRACTION" not in self.var_pams["VAR_LIST_MAIN"]:
+            self.var_pams["VAR_LIST_MAIN"].append("FATES_FRACTION")
 
         vars_missing = []
         vars_needed_for_composites = []
@@ -175,6 +185,15 @@ class XesmfCLMFatesDiagnostics:
                 outd[composite] = outd[self.composite_variable_dict[composite][0][0]] / outd[self.composite_variable_dict[composite][0][1]]
         return outd
     
+    def fix_varlists_for_composite_variables(self, varlist):
+        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        for comp_var in varlist_composite:
+            for underlaying_var in self.composite_variable_dict[comp_var][0]:
+                if underlaying_var not in varlist_direct:
+                    varlist_direct.append(underlaying_var)
+        return varlist_direct, varlist_composite
+    
 
     def get_annual_data(self, year_range, varlist=None):
         """
@@ -192,14 +211,17 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
-        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
-        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        varlist_direct, varlist_composite = self.fix_varlists_for_composite_variables(varlist)
+        
         
         for year in year_range:
             for month in range(12):
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
+                print(varlist_direct)
+                print(varlist_composite)
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
+                outd_here = multiply_by_fates_fraction(outd_here)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -226,8 +248,7 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
-        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
-        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        varlist_direct, varlist_composite = self.fix_varlists_for_composite_variables(varlist)
 
         for year in year_range:
             outd_yr = None
@@ -235,6 +256,7 @@ class XesmfCLMFatesDiagnostics:
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
+                outd_here = multiply_by_fates_fraction(outd_here)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd_yr:
@@ -301,8 +323,7 @@ class XesmfCLMFatesDiagnostics:
         outd = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
-        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
-        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        varlist_direct, varlist_composite = self.fix_varlists_for_composite_variables(varlist)
         
         for year in year_range:
             for monthincr in range(3):
@@ -316,6 +337,7 @@ class XesmfCLMFatesDiagnostics:
                 )
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
+                outd_here = multiply_by_fates_fraction(outd_here)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -329,8 +351,8 @@ class XesmfCLMFatesDiagnostics:
         outd_months = None
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
-        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
-        varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
+        varlist_direct, varlist_composite = self.fix_varlists_for_composite_variables(varlist)
+
         for month in range(12):
             outd = None
             for year in year_range:
@@ -338,6 +360,7 @@ class XesmfCLMFatesDiagnostics:
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month+1:02d}.nc"
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
+                outd_here = multiply_by_fates_fraction(outd_here)
                 # print(outd_here)
                 # sys.exit(4)
                 if not outd:
@@ -795,6 +818,7 @@ class XesmfCLMFatesDiagnostics:
             print(f"{var}/{varname_mod} has unit conversion: {unit_conversion_factor} and new unit is {unit_to_print}")
             for obs_dataset in variables_obs_list[var]:
                 to_plot_obs = ilamb_cfgs.get_data_for_map_plot(var, obs_dataset, self.regrid_target, season = season_name)
+                print(f"Attempting comparison plots for {var} to {obs_dataset} in {season_name}")
                 
                 if to_plot_obs is None:
                     print(f"Comparison for {var} to {obs_dataset} is currently unsupported for {season_name}")
@@ -838,7 +862,6 @@ class XesmfCLMFatesDiagnostics:
                 )
                 #rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_obs)
                 test = calculate_rmse_from_bias(to_plot - to_plot_obs)
-                print(test)
                 rmse, bias = test
                 fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
                 fig.savefig(

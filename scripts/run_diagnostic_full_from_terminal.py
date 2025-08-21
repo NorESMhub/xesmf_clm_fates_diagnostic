@@ -133,7 +133,7 @@ print(diagnostic.find_case_year_range())
 
 
 #sys.exit(4)
-#diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
+diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
 #sys.exit(4)
 
 if not run_dict["compare"] is None:
