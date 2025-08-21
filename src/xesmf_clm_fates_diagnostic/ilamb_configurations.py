@@ -123,6 +123,7 @@ class IlambConfigurations:
         return None
         
     def get_monthly_mean_timeslice_dataset_for_variable_obs(self, variable, oname, year_range=None, season="ANN"):
+        print(self.get_filepath(variable, oname))
         if not os.path.exists(self.get_filepath(variable, oname)):
             return None
         dataset = xr.open_dataset(self.get_filepath(variable, oname))
@@ -219,6 +220,7 @@ class IlambConfigurations:
                 print(oname)
                 outd = self.get_monthly_mean_timeslice_dataset_for_variable_obs(altname, oname)
                 if outd is None:
+                    #print("Skipping because outd is None")
                     continue
                 if altname == "TSA" and outd.mean()> 200:
                     outd = outd - 273.15
