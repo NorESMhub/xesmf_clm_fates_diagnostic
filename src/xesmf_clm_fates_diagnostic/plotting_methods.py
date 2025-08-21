@@ -28,17 +28,24 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
     if xlabel is not None:
         shift, xlabel = get_unit_conversion_and_new_label(xlabel.split("[")[-1][:-1])
         bias = bias + shift
-
-    if (yminv is None) or (ymaxv is None):
-        if not logscale:
-            im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+    try:
+        if (yminv is None) or (ymaxv is None):
+            if not logscale:
+                im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap)
+            else:
+                bias = bias.where(bias > 0)
+                im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, norm = LogNorm())
         else:
-            bias = bias.where(bias > 0)
-            im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, norm = LogNorm())
-    else:
-        im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)
-              
-    
+            im = bias.plot(ax=ax, transform=ccrs.PlateCarree(),cmap=cmap, vmin=yminv, vmax=ymaxv)
+
+        cb =  im.colorbar
+        cb.remove()
+        #cb.
+        plt.colorbar(im, ax=ax, shrink=shrink)#fraction=0.046, pad=0.04) 
+    except TypeError as err:
+        print(f"Not able to produce plot due to {err}")
+        ax.clear()
+            
     ax.set_title('')
     ax.set_title(figname.split("/")[-1])
 
@@ -51,11 +58,6 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.coastlines()
-    cb =  im.colorbar
-    cb.remove()
-    #cb.
-    plt.colorbar(im, ax=ax, shrink=shrink)#fraction=0.046, pad=0.04) 
-
     
     # Show the plot
     if print_to_file:
