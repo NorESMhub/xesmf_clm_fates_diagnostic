@@ -71,7 +71,7 @@ class XesmfCLMFatesDiagnostics:
     # TODO: Make this not hard-coded
     def set_composite_variable_dict(self):
         self.composite_variable_dict = {
-            "albedo": [["FSR", "FSDS"], "divide"],
+            "albedo": [["FSR", "FSDS"], "divide", 100],
             "pr": [["RAIN", "SNOW"], "add"],
             "npp_gpp_fraction":[["FATES_NPP", "FATES_GPP"], "divide"]
             }
@@ -182,7 +182,20 @@ class XesmfCLMFatesDiagnostics:
                 for i in range(len(self.composite_variable_dict[composite][0]) - 1):
                     outd[composite] = outd[composite] + outd[self.composite_variable_dict[composite][0][i+1]]
             if self.composite_variable_dict[composite][1] == "divide":
-                outd[composite] = outd[self.composite_variable_dict[composite][0][0]] / outd[self.composite_variable_dict[composite][0][1]]
+                numenator = outd[self.composite_variable_dict[composite][0][0]]
+                denominator = outd[self.composite_variable_dict[composite][0][1]]
+                mask = denominator.data < float(self.composite_variable_dict[composite][2])
+                denominator.data = np.ma.masked_array(denominator.data, mask=mask)
+                numenator.data = np.ma.masked_array(numenator.data, mask=mask)
+                np.seterr(over="ignore", under="ignore")
+                #print(composite)
+                outd[composite] = xr.DataArray(
+                    data = np.ma.masked_array(numenator.data / denominator.data, mask=mask),
+                    coords = outd[self.composite_variable_dict[composite][0][0]].coords,
+                    dims =  outd[self.composite_variable_dict[composite][0][0]].dims,
+                    name = composite,
+                )
+                #print(outd[composite])
         return outd
     
     def fix_varlists_for_composite_variables(self, varlist):
@@ -217,8 +230,8 @@ class XesmfCLMFatesDiagnostics:
         for year in year_range:
             for month in range(12):
                 mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
-                print(varlist_direct)
-                print(varlist_composite)
+                #print(varlist_direct)
+                #print(varlist_composite)
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 outd_here = multiply_by_fates_fraction(outd_here)
@@ -411,7 +424,7 @@ class XesmfCLMFatesDiagnostics:
         for i in range(region_df.shape[0]):
             fig, axs = plt.subplots(ncols=2, nrows=rownum)
             figs.append([fig, axs])
-        print(varlist)
+        #print(varlist)
         for varnum, var in enumerate(varlist):
             for region, region_info in region_df.iterrows():
                 if rownum < 2:
@@ -445,7 +458,6 @@ class XesmfCLMFatesDiagnostics:
         for i in range(region_df.shape[0]):
             fig, axs = plt.subplots(ncols=2, nrows=rownum)
             figs.append([fig, axs])
-        print(varlist)
         for varnum, var in enumerate(varlist):
             if ilamb_cfgs is None:
                 unit_conversion_factor = 1
@@ -765,10 +777,12 @@ class XesmfCLMFatesDiagnostics:
 
 
     def make_alternate_varlist(self, ilamb_cfgs, variables):
+
         varlist = []
         to_remove = []
         for var in variables:
             print(var)
+            print(self.var_pams["VAR_LIST_MAIN"])
             varname_mod = ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
             if varname_mod is not None:
                 varlist.append(varname_mod)
