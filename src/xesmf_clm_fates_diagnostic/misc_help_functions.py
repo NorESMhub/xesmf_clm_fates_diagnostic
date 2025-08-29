@@ -99,7 +99,7 @@ def unit_convert_single_unit(unit_from, unit_to):
 
     if base_unit_from != base_unit_to:
         multiplicator = multiplicator * simple_conversion_numbers(base_unit_from, base_unit_to)
-    if len(just_string_from) > 1:
+    if len(just_string_from) > 1 and just_string_from[0] in UNIT_PREFIXES:
         from_prefix = UNIT_PREFIXES[just_string_from[0]]
     else:
         from_prefix = 0
