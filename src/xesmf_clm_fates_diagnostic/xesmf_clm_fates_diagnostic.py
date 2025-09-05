@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 import xarray as xr
 
@@ -63,8 +64,8 @@ class XesmfCLMFatesDiagnostics:
         if len(vars_missing):
             print("Not all requested variables are available in output, ignoring these:")
             print(vars_missing)
-        print(self.var_pams)
-        print(self.unit_dict)
+        #print(self.var_pams)
+        #print(self.unit_dict)
         #sys.exit(4)
         #sys.exit(4)
 
@@ -393,7 +394,6 @@ class XesmfCLMFatesDiagnostics:
             year_range = self.get_year_range()
             year_range_full  = self.find_case_year_range()
             year_range_full = np.arange(year_range_full[0], year_range_full[1])
-        
         self.make_global_yearly_trends(year_range=year_range_full)
         outd = self.get_annual_data(year_range)
 
@@ -415,36 +415,6 @@ class XesmfCLMFatesDiagnostics:
         else:
             raise ValueError(f"Files are missing in the year range from {year_start}, {year_end}") 
         return year_range
-    
-    def setup_seasonal_cycle_plots_and_add_data_for_varlist(
-            self, varlist, region_df, year_range_string, varsetname, ilamb_cfgs
-    ):
-        figs = []
-        rownum = int(np.ceil(len(varlist) / 2))        
-        for i in range(region_df.shape[0]):
-            fig, axs = plt.subplots(ncols=2, nrows=rownum)
-            figs.append([fig, axs])
-        #print(varlist)
-        for varnum, var in enumerate(varlist):
-            for region, region_info in region_df.iterrows():
-                if rownum < 2:
-                    axnow = figs[region][1][varnum % 2]
-                else: 
-                    axnow = figs[region][1][varnum // 2, varnum % 2]
-                axnow.set_xticks(ticks=range(12), labels=MONTHS)
-                axnow.set_title(var)
-                axnow.set_ylabel(ylabel)
-
-        # Add data to plots
-        for region, region_info in region_df.iterrows():
-            figs[region][0].suptitle(
-                f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})",
-                size = "x-large"
-            )
-            figs[region][0].tight_layout()
-            figs[region][0].savefig(
-                f"{self.outdir}/seasonal_cycle/{varsetname}/{self.casename}_{varsetname}_{region_info['PTITSTR'].replace(' ', '')}.png"
-            )
 
     def make_timeseries_plots_for_varlist(
         self, outd, varlist, region_df, year_range_string, varsetname, ilamb_cfgs = None
@@ -454,11 +424,15 @@ class XesmfCLMFatesDiagnostics:
         self.add_to_unit_dict(varlist)
         figs = []
         rownum = int(np.ceil(len(varlist) / 2))
-        print(varlist)
         for i in range(region_df.shape[0]):
             fig, axs = plt.subplots(ncols=2, nrows=rownum)
             figs.append([fig, axs])
-        for varnum, var in enumerate(varlist):
+        #print(varsetname)
+        #print(varlist)
+        #print("Now sorted")
+        #print(sorted(varlist, key=str.casefold))
+        #sys.exit(4)
+        for varnum, var in enumerate(sorted(varlist,  key=str.casefold)):
             if ilamb_cfgs is None:
                 unit_conversion_factor = 1
                 unit_to_print = self.unit_dict[var]
@@ -494,7 +468,7 @@ class XesmfCLMFatesDiagnostics:
                 axnow.set_ylabel(ylabel)
         if (ilamb_cfgs is not None) and (self.var_pams["OBSERVATION_COMPARISON"] is not None):
             print("Adding ilamb observations")
-            ilamb_cfgs.add_seasonal_obsdata_to_axis(figs, varlist, region_df, self.var_pams["OBSERVATION_COMPARISON"])
+            ilamb_cfgs.add_seasonal_obsdata_to_axis(figs, sorted(varlist, key=str.casefold), region_df, self.var_pams["OBSERVATION_COMPARISON"])
         for region, region_info in region_df.iterrows():
             figs[region][0].suptitle(
                 f"{region_info['PTITSTR']}, ({region_info['BOXSTR']}) (yrs {year_range_string})",
@@ -558,9 +532,8 @@ class XesmfCLMFatesDiagnostics:
         weights = None
         
         if not missing:
-            print(varlist)
             outd = self.get_annual_mean_ts(year_range, varlist=varlist)
-            for varnum, var in enumerate(varlist):
+            for varnum, var in enumerate(sorted(varlist, key=str.casefold)):
                 outd_regr = regrid_se_data(self.regridder, outd[var])
                 if weights is None:
                     weights = np.cos(np.deg2rad(outd_regr.lat))
@@ -572,7 +545,7 @@ class XesmfCLMFatesDiagnostics:
         fig_count = 0
         fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
         #fig.suptitle("Global annual trends")
-        for varnum, var in enumerate(varlist):
+        for varnum, var in enumerate(sorted(varlist,key=str.casefold)):
             if varnum%25 == 0 and varnum > 0:
                 fig.tight_layout()
                 fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
@@ -735,14 +708,11 @@ class XesmfCLMFatesDiagnostics:
         files_missing = False
         if len(self.filelist) < (year_end - year_start) * 12:
             files_missing = True
-            print(len(self.filelist))
-            print((year_end - year_start) * 12)
-            print(self.filelist)
         return year_start, year_end, files_missing
 
     def add_to_unit_dict(self, varlist):
-        print(varlist)
-        print(self.unit_dict)
+        #print(varlist)
+        #print(self.unit_dict)
         missing = list(set(varlist) - set(self.unit_dict.keys()))
         if len(missing) < 1:
             return
@@ -781,8 +751,8 @@ class XesmfCLMFatesDiagnostics:
         varlist = []
         to_remove = []
         for var in variables:
-            print(var)
-            print(self.var_pams["VAR_LIST_MAIN"])
+            #print(var)
+            #print(self.var_pams["VAR_LIST_MAIN"])
             varname_mod = ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
             if varname_mod is not None:
                 varlist.append(varname_mod)
@@ -827,7 +797,6 @@ class XesmfCLMFatesDiagnostics:
             ilamb_cfgs.print_var_dat(var)
             yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
             varname_mod =  ilamb_cfgs.get_varname_in_file(var, self.var_pams["VAR_LIST_MAIN"])
-            print(var)
             unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[varname_mod])
             print(f"{var}/{varname_mod} has unit conversion: {unit_conversion_factor} and new unit is {unit_to_print}")
             for obs_dataset in variables_obs_list[var]:
