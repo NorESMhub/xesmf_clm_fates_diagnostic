@@ -31,6 +31,22 @@ def multiply_by_fates_fraction(outd_here):
         if vrm.startswith("FATES") and vrm != "FATES_FRACTION":
             outd_here[vrm] = outd_here[vrm] * outd_here["FATES_FRACTION"]
     return outd_here
+
+ 
+def crop_variable_over_box(outd_regr, region_info):
+    crop = outd_regr.sel(
+        lat=(outd_regr.lat >= region_info["BOX_S"]) & (outd_regr.lat <= region_info["BOX_N"])
+        #lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
+    )
+    if region_info["BOX_W"]%360 > region_info["BOX_E"]%360:
+        crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) | (crop.lon%360 <=region_info["BOX_E"]%360))
+    elif region_info["BOX_W"]%360 == region_info["BOX_E"]%360:
+            crop = crop
+    else:
+        crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) & (crop.lon%360 <=region_info["BOX_E"]%360)) 
+    return crop
+
+help_variables = ["FATES_FRACTION", "landfrac", "area"]
     
 
 class XesmfCLMFatesDiagnostics:
@@ -81,6 +97,8 @@ class XesmfCLMFatesDiagnostics:
         # TODO: Make sure all items in SEASONAL is also in var_list_main 
         read = xr.open_dataset(self.filelist[0]).keys()
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
+        self.var_pams["VAR_LIST_MAIN"].append("landfrac")
+        self.var_pams["VAR_LIST_MAIN"].append("area")
         if "FATES_FRACTION" not in self.var_pams["VAR_LIST_MAIN"]:
             self.var_pams["VAR_LIST_MAIN"].append("FATES_FRACTION")
 
@@ -200,7 +218,7 @@ class XesmfCLMFatesDiagnostics:
         return outd
     
     def fix_varlists_for_composite_variables(self, varlist):
-        varlist_direct = list(set(varlist) - set(self.composite_variable_dict.keys()))
+        varlist_direct = list(set(varlist).union(set(help_variables)) - set(self.composite_variable_dict.keys()))
         varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
         for comp_var in varlist_composite:
             for underlaying_var in self.composite_variable_dict[comp_var][0]:
@@ -432,6 +450,8 @@ class XesmfCLMFatesDiagnostics:
         #print("Now sorted")
         #print(sorted(varlist, key=str.casefold))
         #sys.exit(4)
+        area_regr = regrid_se_data(self.regridder, outd["area"])
+        landfrac_regr = regrid_se_data(self.regridder, outd["landfrac"])
         for varnum, var in enumerate(sorted(varlist,  key=str.casefold)):
             if ilamb_cfgs is None:
                 unit_conversion_factor = 1
@@ -445,20 +465,12 @@ class XesmfCLMFatesDiagnostics:
                     axnow = figs[region][1][varnum % 2]
                 else: 
                     axnow = figs[region][1][varnum // 2, varnum % 2]
-
-                crop = outd_regr.sel(
-                    lat=(outd_regr.lat >= region_info["BOX_S"]) & (outd_regr.lat <= region_info["BOX_N"])
-                    #lon=slice(region_info["BOX_W"], region_info["BOX_E"]),
-                )
-                if region_info["BOX_W"]%360 > region_info["BOX_E"]%360:
-                    crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) | (crop.lon%360 <=region_info["BOX_E"]%360))
-                elif region_info["BOX_W"]%360 == region_info["BOX_E"]%360:
-                        crop = crop
-                else:
-                    crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) & (crop.lon%360 <=region_info["BOX_E"]%360)) 
-
-                weights = np.cos(np.deg2rad(crop.lat))
-                weighted_data = crop.weighted(weights)
+                crop = crop_variable_over_box(outd_regr, region_info)
+                area_crop = crop_variable_over_box(area_regr, region_info)
+                landfrac_crop = crop_variable_over_box(landfrac_regr, region_info)
+                weights = area_crop * landfrac_crop
+                #weights = np.cos(np.deg2rad(crop.lat))¨
+                weighted_data = crop.weighted(weights.fillna(0))
                 ts_data = weighted_data.mean(["lon", "lat"])
 
                 
@@ -530,22 +542,29 @@ class XesmfCLMFatesDiagnostics:
         self.add_to_unit_dict(varlist)
         ts_data = np.zeros((len(varlist), len(year_range)))
         weights = None
-        
+        varlist_short = [v for v in varlist if v not in help_variables]
         if not missing:
             outd = self.get_annual_mean_ts(year_range, varlist=varlist)
-            for varnum, var in enumerate(sorted(varlist, key=str.casefold)):
-                outd_regr = regrid_se_data(self.regridder, outd[var])
-                if weights is None:
-                    weights = np.cos(np.deg2rad(outd_regr.lat))
-                weighted = outd_regr.weighted(weights)
-                if len(outd_regr.values.shape) > 3:
+            for varnum, var in enumerate(sorted(varlist_short, key=str.casefold)):
+
+                #outd_regr = regrid_se_data(self.regridder, outd[var])
+                #if weights is None:
+                #    weights 
+                    #weights = np.cos(np.deg2rad(outd_regr.lat))
+                weights = outd["area"]*outd["landfrac"]
+                weighted = outd[var].weighted(weights.fillna(0))
+                if "lat" in outd.dims and len(outd[var].values.shape) > 3:
                     ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values[:,0]
-                else: 
+                elif "lat" in outd.dims: 
                     ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values
+                elif "lndgrid" in outd.dims and len(outd[var].values.shape) > 2:
+                    ts_data[varnum, :] = weighted.mean(["lndgrid"]).values[:,0]
+                else:
+                    ts_data[varnum, :] = weighted.mean(["lndgrid"]).values                    
         fig_count = 0
         fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
         #fig.suptitle("Global annual trends")
-        for varnum, var in enumerate(sorted(varlist,key=str.casefold)):
+        for varnum, var in enumerate(sorted(varlist_short,key=str.casefold)):
             if varnum%25 == 0 and varnum > 0:
                 fig.tight_layout()
                 fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
