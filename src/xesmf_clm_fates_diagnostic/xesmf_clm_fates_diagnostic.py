@@ -80,6 +80,7 @@ class XesmfCLMFatesDiagnostics:
         if len(vars_missing):
             print("Not all requested variables are available in output, ignoring these:")
             print(vars_missing)
+        self.help_variables = list(set(help_variables) - set(vars_missing))
         #print(self.var_pams)
         #print(self.unit_dict)
         #sys.exit(4)
@@ -218,7 +219,7 @@ class XesmfCLMFatesDiagnostics:
         return outd
     
     def fix_varlists_for_composite_variables(self, varlist):
-        varlist_direct = list(set(varlist).union(set(help_variables)) - set(self.composite_variable_dict.keys()))
+        varlist_direct = list(set(varlist).union(set(self.help_variables)) - set(self.composite_variable_dict.keys()))
         varlist_composite = set(varlist).intersection(self.composite_variable_dict.keys())
         for comp_var in varlist_composite:
             for underlaying_var in self.composite_variable_dict[comp_var][0]:
@@ -542,7 +543,7 @@ class XesmfCLMFatesDiagnostics:
         self.add_to_unit_dict(varlist)
         ts_data = np.zeros((len(varlist), len(year_range)))
         weights = None
-        varlist_short = [v for v in varlist if v not in help_variables]
+        varlist_short = [v for v in varlist if v not in self.help_variables]
         if not missing:
             outd = self.get_annual_mean_ts(year_range, varlist=varlist)
             for varnum, var in enumerate(sorted(varlist_short, key=str.casefold)):
