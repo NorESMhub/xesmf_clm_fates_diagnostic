@@ -407,21 +407,23 @@ class XesmfCLMFatesDiagnostics:
                 outd_months = xr.concat([outd_months, outd], dim="time")
         return outd_months
 
-    def make_all_plots_and_tables(self, year_range=None, ilamb_cfgs = None):
+    def make_all_plots_and_tables(self, year_range=None, ilamb_cfgs = None, mute_trend=False, mute_maps=False):
         # TODO: Handle different year_range
         if year_range is None:
             year_range = self.get_year_range()
             year_range_full  = self.find_case_year_range()
             year_range_full = np.arange(year_range_full[0], year_range_full[1])
-        self.make_global_yearly_trends(year_range=year_range_full)
-        outd = self.get_annual_data(year_range)
+        if not mute_trend:
+            self.make_global_yearly_trends(year_range=year_range_full)
+        if not mute_maps:
+            outd = self.get_annual_data(year_range)
 
-        self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
-        for season in range(4):
-            outd = self.get_seasonal_data(season, year_range)
-            self.plot_all_the_variables_on_map(
-                outd, year_range, plottype=SEASONS[season]
-            )
+            self.plot_all_the_variables_on_map(outd, year_range, plottype="ANN")
+            for season in range(4):
+                outd = self.get_seasonal_data(season, year_range)
+                self.plot_all_the_variables_on_map(
+                    outd, year_range, plottype=SEASONS[season]
+                )
         for varsetname, varset in self.var_pams["SEASONAL_VARSETS"].items():
 
             self.make_all_regional_timeseries(year_range, varset, varsetname, ilamb_cfgs=ilamb_cfgs)

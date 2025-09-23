@@ -17,7 +17,9 @@ standard_run_dict = {
 }
 
 run_dict_optional_arguments = {
-    "compare_seasonal": False    
+    "compare_seasonal": False,
+    "mute_trend": False,
+    "mute_maps": False  
 }
 
 def print_help_message():
@@ -47,6 +49,9 @@ def print_help_message():
     print("compare_seasonal=True")
     print("Adds seasonal comparison plots for both observations and comparison to other model output")
     print(" if comparison plotting and/ or observational comparisons are included. Yearranges for this will be the same as for annual comparison plots")
+    print("Boolean keywords mute_trend=True or mute_maps=True can be added to mute the generation of total")
+    print("timeseries trends or variable annual or seasonal single maps, this will")
+    print("shave time off the runtime of the diagnostic if they are not of interest to you")
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 
@@ -54,8 +59,11 @@ def read_optional_arguments(arguments):
     run_dict = standard_run_dict.copy()
     print(arguments)
     for arg in arguments:
+        print(arg)
         arg_key = arg.split("=")[0] 
         arg_val = arg.split("=")[-1] 
+        print(arg_key)
+        print(arg_val)
         if arg_key in run_dict:
             if not os.path.exists(arg_val):
                 print(f"Invalid path {arg_val} for {arg_key} will be ignored")
@@ -72,7 +80,9 @@ def read_optional_arguments(arguments):
             if len(split) > 1:
                 run_dict["year_range_compare"]["year_range_other"] = np.arange(int(split[1].split("-")[0]), int(split[1].split("-")[-1]) +1)
         elif arg_key in run_dict_optional_arguments:
-            run_dict[arg_key] = arg_val
+            run_dict[arg_key] = bool(arg_val)
+        elif arg_key in ["mute_trend", "mute_maps"]:
+            run_dict[arg_key] = True
         else:
             print(f"Argument {arg} is not a valid argument and will be ignored")
         if not os.path.exists(run_dict["outpath"]):
@@ -114,9 +124,11 @@ ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_C
 #sys.exit(4)
 
 run_dict = read_optional_arguments(sys.argv[2:])
+#sys.exit(4)
 
 print(f"All set, setting up to run diagnostics on {run_path} using options:")
 print(run_dict)
+#sys.exit(4)
 
 diagnostic = XesmfCLMFatesDiagnostics(
     # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",
@@ -133,7 +145,7 @@ print(diagnostic.find_case_year_range())
 
 
 #sys.exit(4)
-diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg)
+diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
 #sys.exit(4)
 
 if not run_dict["compare"] is None:
