@@ -68,6 +68,12 @@ def convert_weird_subunits(unit):
     elif "ha" in unit:
         new_unit = unit.replace("ha", "m^2")
         return new_unit, 1e4
+    elif "%month-1" in unit:
+        new_unit = unit.replace("%month", "y")
+        return new_unit, 100 /12.
+    elif "%month" in unit:
+        new_unit = unit.replace("%month", "d")
+        return new_unit, 12 / 100.
     return unit, 1
 
 def deal_with_weird_units_to_and_from(unit_from, unit_to):
