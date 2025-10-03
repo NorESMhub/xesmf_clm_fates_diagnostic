@@ -9,15 +9,11 @@ from  .misc_help_functions import get_unit_conversion_and_new_label
 
 def make_3D_plot(bias,figname,yminv,ymaxv):
 
-    print("making 3d fig")
     images = []
     dims = list(bias.dims)
-    print("dims",dims)
     extra_dim = [d for d in dims if d not in ["lat", "lon"]][0]
-    print("extra dim",extra_dim)
     n = bias.sizes[extra_dim]
     labels = [f"{extra_dim}={i}" for i in range(n)]
-    print("n",n)
     ncols = math.ceil(math.sqrt(n))
     nrows = math.ceil(n / ncols)
     fig, axs = plt.subplots(nrows, ncols, figsize=(4*ncols, 3*nrows), constrained_layout=True)
@@ -50,7 +46,7 @@ def make_3D_plot(bias,figname,yminv,ymaxv):
 def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None, logscale=False):
     # Use viridis for absolute maps
 
-    print("in make bias plot",figname,bias.name)
+    print("in make bias plot",bias.name)
     print_to_file = False
     if ax is None:
         print_to_file = True
