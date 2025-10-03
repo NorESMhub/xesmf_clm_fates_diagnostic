@@ -46,16 +46,21 @@ def make_3D_plot(bias,figname,yminv,ymaxv):
 def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None, logscale=False):
     # Use viridis for absolute maps
 
-    print("in make bias plot",bias.name)
     print_to_file = False
     if ax is None:
         print_to_file = True
     else:
         shrink = 0.5
 
+    if ax is None:
+        plottype='singleplot'
+    else:
+        plottype='multiplot'
+    print("in make bias plot",bias.name)
+
     dims = list(bias.dims)
     if(len(dims) == 3):
-        bias_2d_plot=bias.sum(dim=bias.dims[2])
+        bias_2d_plot=bias.sum(dim=bias.dims[0])
     else:
         bias_2d_plot = bias
     
