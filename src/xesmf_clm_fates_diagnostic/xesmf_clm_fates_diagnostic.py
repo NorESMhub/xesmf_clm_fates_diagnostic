@@ -734,7 +734,7 @@ class XesmfCLMFatesDiagnostics:
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
                 ax=axs[2], 
-                cmap = "RdYlBu_r",
+                cmap = "PuOr_r",
                 yminv = negdiffrange,
                 ymaxv = diffrange,
             )
@@ -887,7 +887,7 @@ class XesmfCLMFatesDiagnostics:
                     yminv = negdiffrange,
                     ymaxv = diffrange,
                     ax=axs[2], 
-                    cmap = "RdYlBu_r"
+                    cmap = "PuOr_r"
                 )
                 #rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_obs)
                 test = calculate_rmse_from_bias(to_plot - to_plot_obs)
