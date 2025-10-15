@@ -4,11 +4,22 @@ import numpy as np
 import xarray as xr
 import math
 import xesmf
+import matplotlib.colors as colors
+import cartopy.feature as cfeature
+
+
 from matplotlib.colors import LogNorm
 from  .misc_help_functions import get_unit_conversion_and_new_label
 
-def make_3D_plot(bias,figname,yminv,ymaxv):
-
+def make_3D_plot(bias,figname,yminv,ymaxv,logscale):
+    if logscale:
+        bias = bias.where(bias > 0)
+        # make the scales such that they blank out extreme values. 
+        yminv=bias.quantile(0.01)
+        ymaxv=bias.quantile(0.99)
+    else: #  inthe log plot, more of the 0 values are removed, but here more values are zero so the tolerance must be higher.  
+        yminv=bias.quantile(0.001)
+        ymaxv=bias.quantile(0.999)
     images = []
     dims = list(bias.dims)
     extra_dim = [d for d in dims if d not in ["lat", "lon"]][0]
@@ -16,16 +27,27 @@ def make_3D_plot(bias,figname,yminv,ymaxv):
     labels = [f"{extra_dim}={i}" for i in range(n)]
     ncols = math.ceil(math.sqrt(n))
     nrows = math.ceil(n / ncols)
-    fig, axs = plt.subplots(nrows, ncols, figsize=(4*ncols, 3*nrows), constrained_layout=True)
+    fig, axs = plt.subplots(nrows, ncols, figsize=(4*ncols, 3*nrows), constrained_layout=True,subplot_kw={'projection': ccrs.PlateCarree()})
     axs = axs.flatten()
     ims = []
     fs=fig.suptitle(figname.split("/")[-1])
     cfs = fs.get_fontsize()
     fs.set_fontsize(cfs * 1.3)
     plotted_axes = []
+    if logscale:
+        bias = bias.where(bias > 0)
     for i, ax in enumerate(axs, start=0):
-        if i < n:       
-            im =bias.isel({extra_dim: i}).plot.pcolormesh(ax=ax,vmin=yminv,vmax=ymaxv,add_colorbar=False,cmap="viridis")
+        if i < n:
+            if not logscale:
+                 im =bias.isel({extra_dim: i}).plot.pcolormesh(ax=ax,vmin=yminv,vmax=ymaxv,add_colorbar=False,cmap="viridis",transform=ccrs.PlateCarree())
+            else:
+                 im =bias.isel({extra_dim: i}).plot.pcolormesh(ax=ax,vmin=yminv,vmax=ymaxv,add_colorbar=False,cmap="viridis",norm=colors.LogNorm(vmin=yminv, vmax=ymaxv),transform=ccrs.PlateCarree())
+
+# Add coastlines and country borders
+            ax.coastlines(linewidth=0.8)
+            ax.add_feature(cfeature.BORDERS, linewidth=0.4)
+            ax.set_global()
+                 
             current_fs = ax.title.get_fontsize()   # get current font size
             ax.set_title(labels[i], fontsize=current_fs * 1.5)
             ax.set_xlabel('')
@@ -65,7 +87,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
         bias_2d_plot = bias
     
     if(len(dims) == 3 and ax is None): # we have an extra dimension
-            make_3D_plot(bias,figname,yminv,ymaxv)
+            make_3D_plot(bias,figname,yminv,ymaxv,logscale)
     else:         
         if ax is None:
             print_to_file = True
