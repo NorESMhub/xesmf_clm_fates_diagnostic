@@ -713,10 +713,8 @@ class XesmfCLMFatesDiagnostics:
                 ymaxv = diffrange,
             )
             rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_other)
-            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
-            fig.savefig(
-                f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
-            )
+            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})", size = "xx-large", y=0.8)
+            fig.savefig(f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png")
         if regridder_between is None:
             return
         regridder_between.grid_in.destroy()
