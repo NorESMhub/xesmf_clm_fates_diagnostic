@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore")
 
 import cartopy.crs as ccrs
 
-from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot, make_regridder_regular_to_coarsest_resolution
+from .plotting_methods import make_generic_regridder, regrid_se_data, make_bias_plot, make_regridder_regular_to_coarsest_resolution, make_3D_plot
 from .infrastructure_help_functions import setup_nested_folder_structure_from_dict, read_pam_file#, clean_empty_folders_in_tree
 from  .misc_help_functions import get_unit_conversion_and_new_label, make_regridding_target_from_weightfile, get_unit_conversion_from_string, do_light_unit_string_conversion, SEASONS, calculate_rmse_from_bias
 
@@ -95,7 +95,6 @@ class XesmfCLMFatesDiagnostics:
             }
 
     def wet_and_cut_varlists(self):
-        # TODO: Make sure all items in SEASONAL is also in var_list_main 
         read = xr.open_dataset(self.filelist[0]).keys()
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
         self.var_pams["VAR_LIST_MAIN"].append("landfrac")
@@ -105,6 +104,7 @@ class XesmfCLMFatesDiagnostics:
 
         vars_missing = []
         vars_needed_for_composites = []
+        vars_3D = []
         for list_n in lists_check:
             for item in self.var_pams[list_n]:
                 if item not in read:
@@ -121,6 +121,8 @@ class XesmfCLMFatesDiagnostics:
                           vars_missing.append(item)  
                     else:
                         vars_missing.append(item)
+            
+
             self.var_pams[list_n] = list(set(self.var_pams[list_n]) - set(vars_missing))
             self.var_pams[list_n] = list(set(self.var_pams[list_n]).union(set(vars_needed_for_composites)))
 
@@ -128,9 +130,24 @@ class XesmfCLMFatesDiagnostics:
             for vari in varset:
                 if vari not in read and vari not in vars_missing:
                     vars_missing.append(vari)
+                elif vari not in self.var_pams["VAR_LIST_MAIN"] and vari in read:
+                    self.var_pams["VAR_LIST_MAIN"].append(vari)
+
         for varset in self.var_pams["SEASONAL_VARSETS"]:
             self.var_pams["SEASONAL_VARSETS"][varset] = list(set(self.var_pams["SEASONAL_VARSETS"][varset]) - set(vars_missing))
+        self.var_pams["3D_vars"] = self.find_variables_3D()
         return vars_missing
+    
+    def find_variables_3D(self):
+        read = xr.open_dataset(self.filelist[0])[self.var_pams["VAR_LIST_MAIN"]]
+        three_d_vars = {}
+        for var in self.var_pams["VAR_LIST_MAIN"]:
+            if len(set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])) > 0:
+                three_d_vars[var] = set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])
+        return three_d_vars
+
+
+
 
     def setup_folder_structure(self, outdir):
         if not os.path.exists(outdir):
@@ -324,14 +341,23 @@ class XesmfCLMFatesDiagnostics:
                 if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
                     logscale = True
                 to_plot = regrid_se_data(self.regridder, outd[var])
-                if "levgrnd" in to_plot.dims or "levsoi" in to_plot.dims:
-                    to_plot = to_plot[0, :, :]
-                make_bias_plot(
-                    to_plot,
-                    f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
-                    xlabel = f"{plottype} {var} [{self.unit_dict[var]}]",
-                    logscale=logscale
-                )
+                if var in self.var_pams["3D_vars"]:
+                    make_3D_plot(
+                        bias = to_plot,
+                        figname=f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}", 
+                        )
+                    make_bias_plot(
+                        to_plot.sum(dim=list(self.var_pams["3D_vars"][var])),
+                        f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_sum_{year_range[0]:04d}-{year_range[-1]:04d}",
+                        xlabel = f"{plottype} {var} [{self.unit_dict[var]}]"
+                    )
+                else:
+                    make_bias_plot(
+                        to_plot,
+                        f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}",
+                        xlabel = f"{plottype} {var} [{self.unit_dict[var]}]",
+                        logscale=logscale
+                    )
 
     def get_seasonal_data(self, season, year_range, varlist=None):
         """
@@ -708,15 +734,13 @@ class XesmfCLMFatesDiagnostics:
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
                 ax=axs[2], 
-                cmap = "RdYlBu_r",
+                cmap = "PuOr_r",
                 yminv = negdiffrange,
                 ymaxv = diffrange,
             )
             rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_other)
-            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
-            fig.savefig(
-                f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png"
-            )
+            fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})", size = "xx-large", y=0.8)
+            fig.savefig(f"{fig_dir}/{self.casename}_compare_{other.casename}_{season_name}_{var}_{year_range_str}.png")
         if regridder_between is None:
             return
         regridder_between.grid_in.destroy()
@@ -863,7 +887,7 @@ class XesmfCLMFatesDiagnostics:
                     yminv = negdiffrange,
                     ymaxv = diffrange,
                     ax=axs[2], 
-                    cmap = "RdYlBu_r"
+                    cmap = "PuOr_r"
                 )
                 #rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_obs)
                 test = calculate_rmse_from_bias(to_plot - to_plot_obs)
