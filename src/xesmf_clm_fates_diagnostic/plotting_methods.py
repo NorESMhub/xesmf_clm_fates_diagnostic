@@ -24,7 +24,7 @@ def make_3D_plot(bias,figname,yminv=None,ymaxv=None):
     plotted_axes = []
     for i, ax in enumerate(axs, start=0):
         if i < n:       
-            im =bias.isel({extra_dim: i}).plot.pcolormesh(ax=ax,vmin=yminv,vmax=ymaxv,add_colorbar=False,cmap="viridis")
+            im =bias.isel({extra_dim: i}).plot.pcolormesh(ax=ax,vmin=yminv,vmax=ymaxv,add_colorbar=False,cmap="gist_earth")
             current_fs = ax.title.get_fontsize()   # get current font size
             ax.set_title(labels[i], fontsize=current_fs * 1.5)
             ax.set_xlabel('')
@@ -42,8 +42,8 @@ def make_3D_plot(bias,figname,yminv=None,ymaxv=None):
     fig.savefig(fignamefull,bbox_inches='tight')
 
                     
-def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None, xlabel=None, logscale=False):
-    # Use viridis for absolute maps
+def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'gist_earth',ax = None, xlabel=None, logscale=False):
+    # Use gist_earth for absolute maps
 
     print_to_file = False
     if ax is None:
@@ -111,7 +111,7 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'viridis',ax = None
         fig.savefig(fignamefull,bbox_inches='tight')
 
 def make_bias_plot_latixy_longxy(bias,latixy, longxy, figname,yminv,ymaxv,cmap = 'RdYlBu_r', log_plot=False):
-    # Use viridis for absolute maps
+    # Use gist_earth for absolute maps
     fig = plt.figure(figsize=(10, 5))
     # Create a GeoAxes with the PlateCarree projection
     #ax = plt.axes(projection=ccrs.PlateCarree())
