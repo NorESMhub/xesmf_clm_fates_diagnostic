@@ -50,5 +50,6 @@ With command line arguments, you can also control the comparison output
 `compare_custom_year_range` gives you the option to choose specific years to compare on the format `yearstart-yearend` if you want the same range from both sets, 
 or `yearstart-yearend_yearstart-yearend` if you want one range for the main dataset, and a different range for the second one.
 `compare_seasonal=True` will add seasonal comparison (for both comparison to model output and observations) plots for the same year ranges.
+`compare_path` is a path to a weight-file to be used for the comparison dataset. If the resolution is the same as for the main run you are comparing to, this is not needed, and the same weight-file will be used. Similarly if the comparison dataset is on regular lat-lon resolution, this is also not needed as a weightfile for regridding is not required.
 `mute_trend=True` will turn off the automatic generation of trend plots, and this will shave some amount of time off the diagnostic runtime. If you are not interested in these, that can be a good idea, particularly for runs that span many years.
 `mute_maps=True` will turn off the automatic generation of single variable plots from the VAR_LIST_MAIN list, and this will shave some amount of time off the diagnostic runtime.

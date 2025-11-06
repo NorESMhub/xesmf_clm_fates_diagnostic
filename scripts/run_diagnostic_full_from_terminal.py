@@ -13,7 +13,8 @@ standard_run_dict = {
     "outpath" : "figs/",
     "pamfile" : f"{os.path.dirname(__file__)}/short_pams.json",
     "compare": None,
-    "year_range_compare": None, 
+    "year_range_compare": None,
+    "compare_weight": None,
 }
 
 run_dict_optional_arguments = {
@@ -47,11 +48,15 @@ def print_help_message():
     print("If the years in the two comparison sets are to be different, you need to supply year-year_year-year")
     print("where the first year-year denotes the range for the main dataset, and the second that of the comparison dataset")
     print("compare_seasonal=True")
-    print("Adds seasonal comparison plots for both observations and comparison to other model output")
     print(" if comparison plotting and/ or observational comparisons are included. Yearranges for this will be the same as for annual comparison plots")
+    print("compare_weight=compare_weight")
+    print("If the comparison run has a non-regular grid resolution different to that of the main run")
+    print("This argument should be passed to allow for the comparison run to be regridded with a different weight file")
     print("Boolean keywords mute_trend=True or mute_maps=True can be added to mute the generation of total")
     print("timeseries trends or variable annual or seasonal single maps, this will")
     print("shave time off the runtime of the diagnostic if they are not of interest to you")
+    print("Adds seasonal comparison plots for both observations and comparison to other model output")
+
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 
@@ -150,12 +155,14 @@ diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict
 
 if not run_dict["compare"] is None:
     print(f"Comparison diagnostics with {run_dict['compare']}")
+    if run_dict["compare_weight"] is None:
+        run_dict["compare_weight"] = run_dict["weight"]
 
     diasgnostic_other = XesmfCLMFatesDiagnostics(
         # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",
         # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
         run_dict['compare'],
-        run_dict["weight"],
+        run_dict["compare_weight"],
         run_dict["pamfile"],
     )
 
