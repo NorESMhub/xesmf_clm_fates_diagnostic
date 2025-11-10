@@ -30,7 +30,7 @@ where `path_1` is the path to the lnd/hist folder containing your output.
 
 The other arguments are optional:
 
-`weight_path` is a path to a weight-file if the standard one is not to be used. For regular lat, lon runs, the weight-file is not used, and hence you can send a dumy argument, use the standard, or if not working on nird, the tool will try to add a dummy and run without if you don't send a weight_path.
+`weight_path` is a path to a weight-file if the standard one is not to be used. Standard weight-file is for ne30 spectral element resolution. On nird, this file is used `/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc` and a premade weight-file for ne16 grid output is here: `/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne16pg3_to_1.9x2.5_nomask_scripgrids_c250425.nc` For regular lat, lon runs, the weight-file is not used, and hence you can send a dumy argument, use the standard, or if not working on nird, the tool will try to add a dummy and run without if you don't send a weight_path.
 
 `opt_path_2` is a path to output from a run you wish to compare to 
 
