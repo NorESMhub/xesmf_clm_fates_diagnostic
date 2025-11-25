@@ -832,7 +832,8 @@ class XesmfCLMFatesDiagnostics:
         if year_range_in is None:
             year_range = self.get_year_range()
         else:
-            year_range = year_range_in
+            year_range, year_range_other = self.get_year_ranges_for_comparison(self, year_range_in)
+            #year_range = year_range_in
         if season == "ANN":
 
             outd = self.get_annual_data(year_range, varlist=varlist)

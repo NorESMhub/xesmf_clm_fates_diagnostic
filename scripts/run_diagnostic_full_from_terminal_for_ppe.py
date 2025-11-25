@@ -13,7 +13,7 @@ standard_run_dict = {
     "outpath" : "figs/ppe/",
     "pamfile" : f"{os.path.dirname(__file__)}/short_pams_co2_wobs_ppe.json",
     "compare": None,
-    "year_range_compare": None,
+    "year_range_compare": {"compare_from_end": 5},
     "compare_weight": None,
 }
 
@@ -111,12 +111,11 @@ ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_C
 #sys.exit(4)
 
 run_dict = read_optional_arguments([])
-#sys.exit(4)
 
 
 #sys.exit(4)
-done =  [0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49]
-ensmembers = [58, 59, 64, 65, 69, 72, 73]
+done =  []
+ensmembers = [0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59, 64, 65, 69, 72, 73]
 root_path = "/datalake/NS9560K/noresm3/cases/coupled_ppe.20251108/"
 for mem in ensmembers:
     run_path = f"{root_path}ensemble_member.{mem:03d}/lnd/hist/"
@@ -139,14 +138,14 @@ for mem in ensmembers:
 
 
     #sys.exit(4)
-    diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
+    #diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
     #sys.exit(4)
     if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
         print("Doing observational comparisons")
-        diagnostic.make_obs_comparisonplots(ilamb_cfg, dump_data_netcdf=True)
+        diagnostic.make_obs_comparisonplots(ilamb_cfg, year_range_in=run_dict["year_range_compare"], dump_data_netcdf=True)
         if run_dict["compare_seasonal"]:
             for season in range(4):
                 print(f"Seasonal observational comparisons with {season}")
-                diagnostic.make_obs_comparisonplots(ilamb_cfg, season=season, dump_data_netcdf=True)
+                diagnostic.make_obs_comparisonplots(ilamb_cfg, season=season, year_range_in=run_dict["year_range_compare"], dump_data_netcdf=True)
 
     print(f"Done, output should be in {run_dict['outpath']}")
