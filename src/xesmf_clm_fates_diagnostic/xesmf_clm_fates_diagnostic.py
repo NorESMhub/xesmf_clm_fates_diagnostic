@@ -186,6 +186,12 @@ class XesmfCLMFatesDiagnostics:
         setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
         return f"{self.outdir}/OBS_comparison/{season}"       
 
+    def setup_folders_for_netcdf_dumps(self):
+        subfolder_structure = {
+            "netcdf_dumps": None
+        }
+        setup_nested_folder_structure_from_dict(self.outdir, subfolder_structure)
+        return f"{self.outdir}/netcdf_dumps/" 
 
     #def clean_out_empty_folders(self):
     #    clean_empty_folders_in_tree(self.outdir)
@@ -810,7 +816,7 @@ class XesmfCLMFatesDiagnostics:
         return varlist, variables
 
     def make_obs_comparisonplots(
-        self, ilamb_cfgs, variables_obs_list=None, season="ANN", year_range_in=None
+        self, ilamb_cfgs, variables_obs_list=None, season="ANN", year_range_in=None, dump_data_netcdf=False
     ):
         if variables_obs_list is None:
             if self.var_pams["OBSERVATION_COMPARISON"] is None:
@@ -835,7 +841,7 @@ class XesmfCLMFatesDiagnostics:
             outd = self.get_seasonal_data(season, year_range, varlist=varlist)
             season_name = SEASONS[season]
         fig_dir = self.setup_folders_for_observation_plots(season_name)
-        
+        nc_dump_dir = self.setup_folders_for_netcdf_dumps()
         for var in variables:
             logscale = False
             if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
@@ -851,6 +857,8 @@ class XesmfCLMFatesDiagnostics:
                 
                 if to_plot_obs is None:
                     print(f"Comparison for {var} to {obs_dataset} is currently unsupported for {season_name}")
+                    if dump_data_netcdf:
+                         to_plot.to_netcdf(f"{nc_dump_dir}/{varname_mod}_{self.casename}_climatologymap_{season_name}_{year_range_str}.nc")
                     continue
                 fig, axs = plt.subplots(
                     nrows=1,
@@ -896,3 +904,6 @@ class XesmfCLMFatesDiagnostics:
                 fig.savefig(
                     f"{fig_dir}/{self.casename}_compare_{varname_mod}_{obs_dataset}_{season_name}_{year_range_str}.png"
                 )
+                if dump_data_netcdf:
+                    to_plot.to_netcdf(f"{nc_dump_dir}/{varname_mod}_{self.casename}_climatologymap_{season_name}_{year_range_str}.nc")
+                    (to_plot -to_plot_obs).to_netcdf(f"{nc_dump_dir}/{varname_mod}_{self.casename}_climatologydiff_to_{obs_dataset}_{season_name}_{year_range_str}.nc")
