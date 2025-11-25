@@ -114,8 +114,8 @@ run_dict = read_optional_arguments([])
 
 
 #sys.exit(4)
-done =  []
-ensmembers = [0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59, 64, 65, 69, 72, 73]
+done =  [0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59,]
+ensmembers = [  64, 65, 69, 72, 73]
 root_path = "/datalake/NS9560K/noresm3/cases/coupled_ppe.20251108/"
 for mem in ensmembers:
     run_path = f"{root_path}ensemble_member.{mem:03d}/lnd/hist/"

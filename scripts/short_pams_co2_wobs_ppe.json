@@ -1,0 +1,44 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TOTSOMC_1m", 
+        "FATES_VEGC", 
+        "FATES_GPP", 
+        "FATES_LAI", 
+        "QSOIL", 
+        "EFLX_LH_TOT", 
+        "FATES_AREA_PLANTS", 
+        "FATES_FIRE_CLOSS", 
+        "BTRAN", 
+        "MORTALITY_CROWNAREA_CANOPY", 
+        "QRUNOFF", 
+        "FSR", 
+        "FATES_STOREC_TF", 
+        "SOILWATER_10CM",
+        "TSA",
+        "FATES_BURNFRAC",
+        "H2OSNO",
+        "TSOI"
+    ],
+
+    "SEASONAL_VARSETS":
+    {
+        "landf": ["EFLX_LH_TOT", "QSOIL", "FSR", "SOILWATER_10CM", "BTRAN", "FATES_LAI"]
+    },
+    "COMPARE_VARIABLES" : ["TSA","FSR", "FSDS", "FCO2", "TLAI", "H2OSNO", "FSNO", "albedo", "pr"],
+
+    "OBSERVATION_COMPARISON" : {
+        "hfls": ["FLUXCOM"],
+        "lai": ["MODIS"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
+        "FATES_GPP": ["FLUXCOM"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "FATES_VEGC": ["Saatchi2011", "Thurner", "ESACCI"],
+        "FATES_BURNFRAC": ["GFED4.1S"],
+        "H2OSNO": ["CanSISE"],
+        "runoff": ["CLASS"]
+    },
+    "LOG_PLOT" : [
+        "DSTFLXT"
+    ]
+}
