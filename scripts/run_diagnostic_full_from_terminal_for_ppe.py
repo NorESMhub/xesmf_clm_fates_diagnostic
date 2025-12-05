@@ -114,8 +114,9 @@ run_dict = read_optional_arguments([])
 
 
 #sys.exit(4)
-done =  [0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59,]
-ensmembers = [  64, 65, 69, 72, 73]
+done =  []
+ensmembers = [ 0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59, 64, 65, 69, 72, 73]
+ensmembers = [19, 21, 32, 65, 69]
 root_path = "/datalake/NS9560K/noresm3/cases/coupled_ppe.20251108/"
 for mem in ensmembers:
     run_path = f"{root_path}ensemble_member.{mem:03d}/lnd/hist/"
@@ -138,7 +139,7 @@ for mem in ensmembers:
 
 
     #sys.exit(4)
-    #diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
+    diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
     #sys.exit(4)
     if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
         print("Doing observational comparisons")
