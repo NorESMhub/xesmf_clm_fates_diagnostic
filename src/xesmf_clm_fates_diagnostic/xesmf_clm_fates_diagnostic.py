@@ -62,7 +62,7 @@ class XesmfCLMFatesDiagnostics:
         self.var_pams = read_pam_file(pamfile)
         print(self.var_pams)
         #sys.exit(4)
-        self.filelist = self.get_clm_h0_filelist()
+        self.filelist, self.ftype_name = self.get_clm_h0_filelist()
         self.filelist.sort()
         self.regridder = make_generic_regridder(self.weightfile, self.filelist[0])
         self.regrid_target = make_regridding_target_from_weightfile(self.weightfile, self.filelist[0])
@@ -198,9 +198,14 @@ class XesmfCLMFatesDiagnostics:
         -------
         list
             with paths to all the clm2.h0 files
+            or clm2.h0a or clm2.h0i if those are the outputs
         """
         #(f"{self.datapath}*.clm2.h0.*.nc")
-        return glob.glob(f"{self.datapath}*.clm2.h0.*.nc")
+        if len(glob.glob((f"{self.datapath}*.clm2.h0.*.nc"))) > 0:
+            return glob.glob(f"{self.datapath}*.clm2.h0.*.nc"), "clm2.h0"
+        if len(glob.glob((f"{self.datapath}*.clm2.h0a.*.nc"))) > 0:
+            return glob.glob(f"{self.datapath}*.clm2.h0a.*.nc"), "clm2.h0a"
+        return glob.glob(f"{self.datapath}*.clm2.h0i.*.nc"), "clm2.h0i"
     
     def add_composite_variables(self, outd, varlist_composite):
         """
@@ -266,7 +271,7 @@ class XesmfCLMFatesDiagnostics:
         
         for year in year_range:
             for month in range(12):
-                mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
+                mfile = f"{self.datapath}/{self.casename}.{self.ftype_name}.{year:04d}-{month + 1:02d}.nc"
                 #print(varlist_direct)
                 #print(varlist_composite)
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
@@ -303,7 +308,7 @@ class XesmfCLMFatesDiagnostics:
         for year in year_range:
             outd_yr = None
             for month in range(12):                         
-                mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month + 1:02d}.nc"
+                mfile = f"{self.datapath}/{self.casename}.{self.ftype_name}.{year:04d}-{month + 1:02d}.nc"
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 outd_here = multiply_by_fates_fraction(outd_here)
@@ -392,7 +397,7 @@ class XesmfCLMFatesDiagnostics:
                     month = 12
                 # print(f"Season: {season}, monthincr: {monthincr}, month: {monthincr}")
                 mfile = (
-                    f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month:02d}.nc"
+                    f"{self.datapath}/{self.casename}.{self.ftype_name}.{year:04d}-{month:02d}.nc"
                 )
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
@@ -416,7 +421,7 @@ class XesmfCLMFatesDiagnostics:
             outd = None
             for year in year_range:
                 # print(f"Season: {season}, monthincr: {monthincr}, month: {monthincr}")
-                mfile = f"{self.datapath}/{self.casename}.clm2.h0.{year:04d}-{month+1:02d}.nc"
+                mfile = f"{self.datapath}/{self.casename}.{self.ftype_name}.{year:04d}-{month+1:02d}.nc"
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 outd_here = multiply_by_fates_fraction(outd_here)
