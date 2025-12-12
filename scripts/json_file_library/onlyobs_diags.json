@@ -1,0 +1,48 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+	"WIND",
+        "SNOW",
+	"SOILWATER_10CM",
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+	"QRUNOFF",
+        "FATES_GPP",
+        "FSH",
+        "EFLX_LH_TOT",
+	"FATES_BURNFRAC",
+        "FATES_VEGC",
+        "H2OSNO",
+        "FSDS",
+        "FSR", 
+        "FSA", 
+        "TOTSOMC_1m" ,
+	"FATES_LAI"
+    ],
+
+    "SEASONAL_VARSETS":
+    {    },
+    
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","FATES_VEGC","WIND","FATES_BURNFRAC"],
+
+    "OBSERVATION_COMPARISON" : {
+        "hfss": ["FLUXCOM","WECANN","CLASS"],
+	"hfls": ["FLUXCOM","WECANN","CLASS","DOLCE"],
+        "runoff": ["LORA","CLASS"],
+        "lai": ["MODIS", "AVHRR"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
+        "FATES_GPP": ["FLUXCOM","WECANN","GBAF"],
+	"FATES_BURNFRAC": ["GFED4.1S","GFED5"],
+        "H2OSNO": ["CanSISE"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "RAIN": ["CMAPv1904"],
+        "SNOW": ["CMAPv1904"],
+        "FATES_VEGC": ["XuSaatchi2021", "Thurner", "NBCD2000", "Tropical","ESACCI"],	
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
+    },
+    "LOG_PLOT" : []
+}
+
