@@ -459,11 +459,13 @@ class XesmfCLMFatesDiagnostics:
 
             self.make_all_regional_timeseries(year_range, varset, varsetname, ilamb_cfgs=ilamb_cfgs)
 
-    def get_year_range(self):
+    def get_year_range(self, get_full_range=False):
         year_start, year_end, files_missing = self.find_case_year_range()
         # TODO: Deal with missing files, also for different year_range
-        if not files_missing:
+        if not files_missing and not get_full_range:
             year_range = np.arange(max(year_start, year_end - 20), year_end + 1)
+        elif not files_missing and get_full_range:
+            year_range = np.arange(year_start, year_end + 1)
         else:
             raise ValueError(f"Files are missing in the year range from {year_start}, {year_end}") 
         return year_range
@@ -622,17 +624,10 @@ class XesmfCLMFatesDiagnostics:
         pass
     
     def get_year_ranges_for_comparison(self, other, year_range_in=None):
-        year_range_avail = self.get_year_range()
-        year_range_other_avail = other.get_year_range()
+        year_range_avail = self.get_year_range(get_full_range=True)
+        year_range_other_avail = other.get_year_range(get_full_range=True)
         if year_range_in is None:
-            year_range = year_range_avail
-            year_range_other = year_range_other_avail
-            if year_range_other[0] < year_range[0]:
-                year_range = year_range_other
-            else:
-                year_range_other = year_range
-            return year_range, year_range_other
-        
+            year_range = {"compare_from_end":20}
         if "year_range" in year_range_in:
             year_range = year_range_in["year_range"]
             if "year_range_other" in year_range_in:
@@ -646,8 +641,7 @@ class XesmfCLMFatesDiagnostics:
             year_range_other = np.arange(year_range_other_avail[0], year_range_other_avail[0] + year_range_in["compare_from_start"])
         elif "compare_from_end" in year_range_in:
             year_range = np.arange(year_range_avail[-1]-year_range_in["compare_from_end"], year_range_avail[-1]+1)
-            year_range_other = np.arange(year_range_other_avail[-1]-year_range_in["compare_from_end"], year_range_other_avail[-1]+1)
-              
+            year_range_other = np.arange(year_range_other_avail[-1]-year_range_in["compare_from_end"], year_range_other_avail[-1]+1)   
         try:
             year_range = np.arange(np.max((year_range[0], year_range_avail[0])), np.min((year_range[-1], year_range_avail[-1])) + 1)
             year_range_other = np.arange(np.max((year_range_other[0], year_range_other_avail[0])), np.min((year_range_other[-1], year_range_other_avail[-1])) + 1)
