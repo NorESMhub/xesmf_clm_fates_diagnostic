@@ -139,9 +139,10 @@ class XesmfCLMFatesDiagnostics:
         return vars_missing
     
     def find_variables_3D(self):
-        read = xr.open_dataset(self.filelist[0])[self.var_pams["VAR_LIST_MAIN"]]
+        varlist_direct = list(set(self.var_pams["VAR_LIST_MAIN"])- set(self.composite_variable_dict.keys()))
+        read = xr.open_dataset(self.filelist[0])[varlist_direct]
         three_d_vars = {}
-        for var in self.var_pams["VAR_LIST_MAIN"]:
+        for var in varlist_direct:
             if len(set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])) > 0:
                 three_d_vars[var] = set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])
         return three_d_vars
