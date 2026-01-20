@@ -10,6 +10,7 @@
         "FSH",
         "EFLX_LH_TOT",
         "FATES_VEGC",
+        "FATES_VEGC_ABOVEGROUND",
         "H2OSNO",
         "FSDS",
         "FSR", 
@@ -34,7 +35,8 @@
         "TSA": ["CRU4.07", "CRU4.07-1900"],
         "RAIN": ["CMAPv1904"],
         "SNOW": ["CMAPv1904"],
-        "FATES_VEGC": ["Saatchi2011", "Thurner", "NBCD2000", "Tropical"],
+        "FATES_VEGC": ["XuSaatchi2021", "Saatchi2011"],
+        "FATES_VEGC_ABOVEGROUND": ["ESACCI", "USForest", "NBCD2000"],
         "rsus": ["CERESed4.2", "GEWEX.SRB"],
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
         "FSDS": ["CERESed4.2", "GEWEX.SRB"]
