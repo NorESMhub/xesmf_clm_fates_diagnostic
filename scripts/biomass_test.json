@@ -1,0 +1,21 @@
+{
+    "VAR_LIST_MAIN" : [
+	"FATES_VEGC",
+	"FATES_VEGC_ABOVEGROUND",
+	"FATES_FRACTION"
+    ],
+
+    "SEASONAL_VARSETS": {
+    },
+
+
+    "COMPARE_VARIABLES" : ["FATES_VEGC", "FATES_VEGC_ABOVEGROUND"],
+
+    "OBSERVATION_COMPARISON" : {
+        "FATES_VEGC": ["XuSaatchi2021", "Saatchi2011"],
+	"FATES_VEGC_ABOVEGROUND": ["ESACCI", "USForest", "NBCD2000"]
+    },
+
+    "LOG_PLOT" : []
+    
+}
