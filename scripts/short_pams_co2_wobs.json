@@ -9,6 +9,7 @@
         "FSH",
         "EFLX_LH_TOT",
         "FATES_VEGC",
+        "FATES_VEGC_ABOVEGROUND",
         "H2OSNO",
         "FSDS",
         "FSR", 
@@ -54,7 +55,8 @@
         "FSDS": ["CERESed4.2", "GEWEX.SRB"],
         "albedo": ["CERESed4.2", "GEWEX.SRB"],
         "pr": ["CMAPv1904"],
-        "FATES_VEGC": ["Saatchi2011", "Thurner", "ESACCI"],
+        "FATES_VEGC": ["XuSaatchi2021", "Saatchi2011"],
+        "FATES_VEGC_ABOVEGROUND": ["ESACCI", "USForest", "NBCD2000"],
         "FATES_BURNFRAC": ["GFED4.1S"]
     },
     "LOG_PLOT" : [
