@@ -10,7 +10,7 @@ from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics, ilamb_configura
 
 standard_run_dict = {
     "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
-    "outpath" : "/nird/datalake/NS9188K/www/diagnostics/noresm/zofias/",
+    "outpath" : "/datalake/NS9560K/www/diagnostics/noresm/zofias/",
     "pamfile" : f"{os.path.dirname(__file__)}/firediags_standard.json",
     "compare": None,
     "year_range_compare": None, 
