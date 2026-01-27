@@ -1,0 +1,44 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+	"MEG_isoprene",
+	"MEG_carene_3",
+	"MEG_limonene",
+	"MEG_myrcene",
+	"MEG_ocimene_t_b",
+	"MEG_sabinene",
+	"MEG_pinene_a",
+	"MEG_pinene_b",
+	"QRUNOFF",
+        "FATES_GPP",
+        "FSH",
+	"FATES_LAI",
+	"FATES_VEGC",
+        "EFLX_LH_TOT",
+	"FATES_BURNFRAC",
+        "FSDS",
+        "FSR", 
+        "FSA"
+    ],
+
+    "SEASONAL_VARSETS":
+    
+    {"BVOCs_1":["MEG_isoprene","MEG_limonene","MEG_myrcene","MEG_ocimene_t_b"],
+     "BVOCs_2":[ "MEG_carene_3","MEG_sabinene","MEG_pinene_a","MEG_pinene_b"]},
+    
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","WIND",  "MEG_isoprene","MEG_limonene","MEG_myrcene","MEG_ocimene_t_b", "MEG_carene_3","MEG_sabinene","MEG_pinene_a","MEG_pinene_b"],
+
+    "OBSERVATION_COMPARISON" : {
+        "lai": ["MODIS", "AVHRR"],
+        "FATES_GPP": ["FLUXCOM","WECANN","GBAF"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "RAIN": ["CMAPv1904"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
+    },
+    "LOG_PLOT" : []
+}
+
