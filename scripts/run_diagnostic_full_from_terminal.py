@@ -56,7 +56,6 @@ def print_help_message():
     print("timeseries trends or variable annual or seasonal single maps, this will")
     print("shave time off the runtime of the diagnostic if they are not of interest to you")
     print("Adds seasonal comparison plots for both observations and comparison to other model output")
-
     print(f"python {os.path.dirname(__file__)}/{os.path.basename(__file__)} --help will reiterate these instructions")
     sys.exit(4)
 

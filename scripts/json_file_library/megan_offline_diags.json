@@ -1,0 +1,49 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+	"MEG_isoprene",
+	"MEG_carene_3",
+	"MEG_acetaldehyde",
+	"MEG_acetic_acid",
+	"MEG_acetone",
+	"MEG_carene_3",
+	"MEG_ethanol",
+	"MEG_formaldehyde",
+	"MEG_methanol",
+	"MEG_pinene_a",
+	"MEG_thujene_a",
+	"QRUNOFF",
+        "FATES_GPP",
+        "FSH",
+	"FATES_LAI",
+	"FATES_VEGC",
+        "EFLX_LH_TOT",
+	"FATES_BURNFRAC",
+        "FSDS",
+        "FSR", 
+        "FSA"
+    ],
+
+    "SEASONAL_VARSETS":
+    {"BVOCs_1":["MEG_isoprene","MEG_acetaldehyde","MEG_acetic_acid","MEG_acetone","MEG_carene_3"],
+     "BVOCs_2":[ "MEG_ethanol","MEG_formaldehyde","MEG_methanol","MEG_pinene_a","MEG_thujene_a"]},
+    
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","FATES_VEGC","WIND","FATES_BURNFRAC","MEG_isoprene",
+			   "MEG_acetaldehyde","MEG_acetic_acid","MEG_acetone",
+			   "MEG_carene_3","MEG_ethanol","MEG_formaldehyde","MEG_methanol",
+        "MEG_pinene_a",        "MEG_thujene_a"],
+
+    "OBSERVATION_COMPARISON" : {
+        "lai": ["MODIS", "AVHRR"],
+        "FATES_GPP": ["FLUXCOM","WECANN","GBAF"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "RAIN": ["CMAPv1904"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
+    },
+    "LOG_PLOT" : []
+}
+

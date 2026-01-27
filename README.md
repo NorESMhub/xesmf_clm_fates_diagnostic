@@ -53,3 +53,9 @@ or `yearstart-yearend_yearstart-yearend` if you want one range for the main data
 `compare_path` is a path to a weight-file to be used for the comparison dataset. If the resolution is the same as for the main run you are comparing to, this is not needed, and the same weight-file will be used. Similarly if the comparison dataset is on regular lat-lon resolution, this is also not needed as a weightfile for regridding is not required.
 `mute_trend=True` will turn off the automatic generation of trend plots, and this will shave some amount of time off the diagnostic runtime. If you are not interested in these, that can be a good idea, particularly for runs that span many years.
 `mute_maps=True` will turn off the automatic generation of single variable plots from the VAR_LIST_MAIN list, and this will shave some amount of time off the diagnostic runtime.
+
+### JSON parameter file library. 
+
+There is a small library of parameter .json files in json_file_library. These are mostly self explanatory and are intended to provide example setups for different topics of interest. For example, there are diagnostics for fire, the outputs of MEGAN (the BVOC model in CLM), demographic processes and frozen system processes.  This is intended to be a 'live' resource so we should continue to add files where people have interests in curating them here.
+
+The 'long', 'short' and 'onlyobs' filesa re intended for more genereal purposes. 'short_diags.json' might be considered as a default file. Then 'onlyobs' is a means ofgetting to the observational comparisons quickly. 'long_diags.json' is very comprehensive and contains many seasonal plots and 3D plots. 

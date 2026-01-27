@@ -1,0 +1,66 @@
+{
+    "VAR_LIST_MAIN" : [
+        "TSA",
+	"WIND",
+        "SNOW",
+	"SOILWATER_10CM",
+        "TLAI",
+        "FLDS", 
+        "RAIN",
+	"MEG_isoprene",
+	"QRUNOFF",
+        "FATES_GPP",
+        "FSH",
+        "EFLX_LH_TOT",
+	"FATES_BURNFRAC",
+        "FATES_VEGC",
+        "H2OSNO",
+        "FSDS",
+	"FCO2",
+        "FSR", 
+        "FSA", 
+        "TOTSOMC_1m" ,
+	"FATES_LAI",
+	"FATES_HARVEST_WOODPROD_CFLUX",
+	"FATES_GRAZING",
+	"HR",
+	"FATES_AUTORESP",
+	"FATES_NPP",
+	"QBOT",
+	"WIND",
+	"FATES_AREA_PLANTS"
+	
+    ],
+
+    "SEASONAL_VARSETS":
+    {  "main obs":
+        ["FATES_GPP","TLAI","EFLX_LH_TOT","FSH","QRUNOFF","FATES_BURNFRAC"],
+        "drivers":
+        ["FSDS","RAIN","SNOW","QBOT","TSA","FSDS","WIND"],
+       "c_state":["FATES_LAI","FATES_AREA_PLANTS","TOTSOMC_1m","FATES_VEGC"],
+        "cfluxes":
+        [ "FATES_GPP", "FATES_NPP","FATES_AUTORESP","HR","FATES_HARVEST_WOODPROD_CFLUX","FATES_GRAZING"]
+   },
+    
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","FATES_VEGC","WIND","FATES_BURNFRAC","FCO2","MEG_isoprene","TOTSOMC_1m","FATES_VEGC","FATES_NPP"],
+
+    "OBSERVATION_COMPARISON" : {
+        "hfss": ["FLUXCOM","WECANN","CLASS"],
+	"hfls": ["FLUXCOM","WECANN","CLASS","DOLCE"],
+        "runoff": ["LORA","CLASS"],
+        "lai": ["MODIS", "AVHRR"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
+        "FATES_GPP": ["FLUXCOM","WECANN","GBAF"],
+	"FATES_BURNFRAC": ["GFED4.1S","GFED5"],
+        "H2OSNO": ["CanSISE"],
+        "TSA": ["CRU4.07", "CRU4.07-1900"],
+        "RAIN": ["CMAPv1904"],
+        "SNOW": ["CMAPv1904"],
+        "FATES_VEGC": ["XuSaatchi2021", "Thurner", "NBCD2000", "Tropical","ESACCI"],	
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],        
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
+    },
+    "LOG_PLOT" : []
+}
+
