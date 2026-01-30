@@ -178,6 +178,7 @@ class IlambConfigurations:
             
         elif year_range is None:
             start_index = np.max(time_len-clim_length, 0) -1
+            print(varname)
             outd_gn = dataset[varname].isel(time = slice(start_index, time_len)).mean(dim="time")
         if "missing" in dataset[varname].attrs.keys():
             print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")

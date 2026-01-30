@@ -217,7 +217,7 @@ def regrid_se_data(regridder, data_to_regrid, lndfrac=None, landmask=None):
     if isinstance(data_to_regrid, xr.DataArray):
         if lndfrac is not None:
             regridded = regridded/ regridded_landfrac
-            print(regridded)
+            #print(regridded)
         if landmask is not None:
             regridded = regridded * regridded_landmask
         return regridded, regridded_landmask

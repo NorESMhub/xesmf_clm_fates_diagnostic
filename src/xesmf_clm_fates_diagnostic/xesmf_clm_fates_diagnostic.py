@@ -281,7 +281,7 @@ class XesmfCLMFatesDiagnostics:
                 #print(varlist_direct)
                 #print(varlist_composite)
                 test = xr.open_dataset(mfile, engine="netcdf4")
-                print(test.keys())
+                #print(test.keys())
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 outd_here = multiply_by_fates_fraction(outd_here)
@@ -838,7 +838,7 @@ class XesmfCLMFatesDiagnostics:
 
         variables = list(variables_obs_list.keys())
         varlist, variables = self.make_alternate_varlist(ilamb_cfgs, variables)
-        print(varlist)
+        #print(varlist)
         #sys.exit(4)
         self.add_to_unit_dict(varlist)
         self.add_to_unit_dict(variables)
@@ -885,6 +885,9 @@ class XesmfCLMFatesDiagnostics:
                 print(to_plot)
                 print(outd[varname_mod])
                 print(varname_mod)
+                print(to_plot_obs.mean())
+                print(to_plot_obs.min())
+                print(to_plot_obs.max())
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
                 make_bias_plot(
                     to_plot,
