@@ -643,8 +643,9 @@ class XesmfCLMFatesDiagnostics:
     def get_year_ranges_for_comparison(self, other, year_range_in=None):
         year_range_avail = self.get_year_range(get_full_range=True)
         year_range_other_avail = other.get_year_range(get_full_range=True)
+        print(year_range_in)
         if year_range_in is None:
-            year_range = {"compare_from_end":20}
+            year_range_in = {"compare_from_end":20}
         if "year_range" in year_range_in:
             year_range = year_range_in["year_range"]
             if "year_range_other" in year_range_in:
@@ -705,8 +706,8 @@ class XesmfCLMFatesDiagnostics:
                 layout = 'constrained'
             )
             # Regridding block
-            to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"]) * unit_conversion_factor
-            to_plot_other = regrid_se_data(other.regridder, outd_other[var]) * unit_conversion_factor
+            to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"])[0] * unit_conversion_factor
+            to_plot_other = regrid_se_data(other.regridder, outd_other[var])[0] * unit_conversion_factor
             if regridder_between is not None:
                 if regrid_self_to_other:
                     to_plot = regridder_between(to_plot)
@@ -751,8 +752,6 @@ class XesmfCLMFatesDiagnostics:
                 f"{self.casename} - {other.casename}",
                 ax=axs[2], 
                 cmap = "PuOr_r",
-                yminv = negdiffrange,
-                ymaxv = diffrange,
             )
             rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_other)
             fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})", size = "xx-large", y=0.8)
