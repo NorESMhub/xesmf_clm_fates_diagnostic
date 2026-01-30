@@ -10,10 +10,10 @@ from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics, ilamb_configura
 
 standard_run_dict = {
     "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne16pg3_to_1.9x2.5_nomask_scripgrids_c250425.nc",
-    "outpath" : "figs/ppe/",
+    "outpath" : "figs/ppe_partII/",
     "pamfile" : f"{os.path.dirname(__file__)}/short_pams_co2_wobs_ppe.json",
     "compare": None,
-    "year_range_compare": {"compare_from_end": 5},
+    "year_range_compare": {"compare_from_end": 3},
     "compare_weight": None,
 }
 
@@ -117,8 +117,12 @@ run_dict = read_optional_arguments([])
 done =  []
 ensmembers = [ 0, 3, 5, 9, 19, 21, 24, 30, 32, 39, 41, 42, 48, 49, 58, 59, 64, 65, 69, 72, 73]
 ensmembers = [19, 21, 32, 65, 69]
-root_path = "/datalake/NS9560K/noresm3/cases/coupled_ppe.20251108/"
+ensmembers = list(range(0,61))
+root_path = "/nird/datalake/NS9560K/noresm3/cases/coupled_ppe.20260126/"
 for mem in ensmembers:
+    if os.path.exists(f"{run_dict['outpath']}/ensemble_member.{mem:03d}"):
+        print(f"Skipping ensemble member {mem} as done already")
+        continue
     run_path = f"{root_path}ensemble_member.{mem:03d}/lnd/hist/"
     print(run_path)
     print(f"All set, setting up to run diagnostics on {run_path} using options:")
