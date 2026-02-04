@@ -55,7 +55,8 @@ def make_bias_plot(bias,figname,yminv=None,ymaxv=None,cmap = 'gist_earth',ax = N
         plottype='singleplot'
     else:
         plottype='multiplot'
-    print("in make bias plot",bias.name)
+    print("in make bias plot", figname)
+    print(bias)
 
     dims = list(bias.dims)
     if(len(dims) == 3):
@@ -187,19 +188,43 @@ def make_se_regridder(weight_file, regrid_method="conserved"):
     )
     return regridder
 
-def regrid_se_data(regridder, data_to_regrid):
+def regrid_se_data(regridder, data_to_regrid, lndfrac=None, landmask=None):
+    regridded_landmask = None
     if regridder is None:
+        if landmask is not None:
+            return data_to_regrid*landmask, landmask
         return data_to_regrid
     #print(data_to_regrid.dims)
     if isinstance(data_to_regrid, xr.DataArray):
         #print(type(data_to_regrid))
         updated = data_to_regrid.copy().transpose(..., "lndgrid").expand_dims("dummy", axis=-2)
+        if lndfrac is not None:
+            lndfrac_updated = lndfrac.copy().transpose(..., "lndgrid").expand_dims("dummy", axis=-2)
+            updated = updated * lndfrac_updated
+            regridded_landfrac = regridder(lndfrac_updated.rename({"dummy": "lat", "lndgrid": "lon"}))
+        if landmask is not None:
+            landmask_updated = landmask.copy().transpose(..., "lndgrid").expand_dims("dummy", axis=-2)
+            regridded_landmask = regridder(landmask_updated.rename({"dummy": "lat", "lndgrid": "lon"}))
     else:
-        vars_with_ncol = [name for name in data_to_regrid.variables if "ncol" in data_to_regrid[name].dims]
+        vars_with_ncol = [name for name in data_to_regrid.variables if "lndgrid" in data_to_regrid[name].dims]
         updated = data_to_regrid.copy().update(
             data_to_regrid[vars_with_ncol].transpose(..., "lndgrid").expand_dims("dummy", axis=-2)
         )
+        for var in vars_with_ncol:
+            if var != "landfrac":
+                updated[var] = updated[var] * updated["landfrac"]
     regridded = regridder(updated.rename({"dummy": "lat", "lndgrid": "lon"}))
+    if isinstance(data_to_regrid, xr.DataArray):
+        if lndfrac is not None:
+            regridded = regridded/ regridded_landfrac
+            print(regridded)
+        if landmask is not None:
+            regridded = regridded * regridded_landmask
+        return regridded, regridded_landmask
+    for var in vars_with_ncol:
+        if var != "landfrac":
+            regridded[var] = regridded[var] / regridded["landfrac"]
+
     return regridded
 
 def make_regular_grid_regridder(regrid_start, regrid_target, method= "bilinear"):

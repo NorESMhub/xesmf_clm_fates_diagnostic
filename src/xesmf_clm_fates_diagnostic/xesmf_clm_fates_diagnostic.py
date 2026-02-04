@@ -46,7 +46,7 @@ def crop_variable_over_box(outd_regr, region_info):
         crop = crop.sel(lon=(crop.lon%360 >= region_info["BOX_W"]%360) & (crop.lon%360 <=region_info["BOX_E"]%360)) 
     return crop
 
-help_variables = ["FATES_FRACTION", "landfrac", "area"]
+help_variables = ["FATES_FRACTION", "landfrac", "area", "landmask"]
     
 
 class XesmfCLMFatesDiagnostics:
@@ -81,9 +81,9 @@ class XesmfCLMFatesDiagnostics:
             print("Not all requested variables are available in output, ignoring these:")
             print(vars_missing)
         self.help_variables = list(set(help_variables) - set(vars_missing))
-        #print(self.var_pams)
-        #print(self.unit_dict)
+        print(self.help_variables)
         #sys.exit(4)
+        #print(self.unit_dict)
         #sys.exit(4)
 
     # TODO: Make this not hard-coded
@@ -99,6 +99,7 @@ class XesmfCLMFatesDiagnostics:
         lists_check =["VAR_LIST_MAIN", "COMPARE_VARIABLES"]
         self.var_pams["VAR_LIST_MAIN"].append("landfrac")
         self.var_pams["VAR_LIST_MAIN"].append("area")
+        self.var_pams["VAR_LIST_MAIN"].append("landmask")
         if "FATES_FRACTION" not in self.var_pams["VAR_LIST_MAIN"]:
             self.var_pams["VAR_LIST_MAIN"].append("FATES_FRACTION")
 
@@ -133,20 +134,25 @@ class XesmfCLMFatesDiagnostics:
                 elif vari not in self.var_pams["VAR_LIST_MAIN"] and vari in read:
                     self.var_pams["VAR_LIST_MAIN"].append(vari)
 
+        varset_drop = []
         for varset in self.var_pams["SEASONAL_VARSETS"]:
             self.var_pams["SEASONAL_VARSETS"][varset] = list(set(self.var_pams["SEASONAL_VARSETS"][varset]) - set(vars_missing))
+            if len(self.var_pams["SEASONAL_VARSETS"][varset]) == 0:
+                varset_drop.append(varset)
+        for varset in varset_drop:
+            del self.var_pams["SEASONAL_VARSETS"][varset]
+            print(f"Dropping varset {varset} as no variables are available")
         self.var_pams["3D_vars"] = self.find_variables_3D()
         return vars_missing
     
     def find_variables_3D(self):
-        read = xr.open_dataset(self.filelist[0])[self.var_pams["VAR_LIST_MAIN"]]
+        varlist_direct = list(set(self.var_pams["VAR_LIST_MAIN"])- set(self.composite_variable_dict.keys()))
+        read = xr.open_dataset(self.filelist[0])[varlist_direct]
         three_d_vars = {}
-        for var in self.var_pams["VAR_LIST_MAIN"]:
+        for var in varlist_direct:
             if len(set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])) > 0:
                 three_d_vars[var] = set(read[var].dims) - set(["time", "lndgrid", "lat", "lon", "latitude", "longitude"])
         return three_d_vars
-
-
 
 
     def setup_folder_structure(self, outdir):
@@ -156,7 +162,7 @@ class XesmfCLMFatesDiagnostics:
         subfolder_structure = {
             f"{self.casename}": {
                 "trends": None, 
-                "clim_maps": ["ANN", "DJF", "MAM", "JJA", "SON"], 
+                "clim_maps": ["ANN", "DJF", "MAM", "JJA", "SON"],
                 "seasonal_cycle": None, 
             }
         }
@@ -274,6 +280,8 @@ class XesmfCLMFatesDiagnostics:
                 mfile = f"{self.datapath}/{self.casename}.{self.ftype_name}.{year:04d}-{month + 1:02d}.nc"
                 #print(varlist_direct)
                 #print(varlist_composite)
+                test = xr.open_dataset(mfile, engine="netcdf4")
+                print(test.keys())
                 outd_here = xr.open_dataset(mfile, engine="netcdf4")[varlist_direct]
                 outd_here = self.add_composite_variables(outd_here, varlist_composite)
                 outd_here = multiply_by_fates_fraction(outd_here)
@@ -341,18 +349,20 @@ class XesmfCLMFatesDiagnostics:
 
         self.add_to_unit_dict(self.var_pams["VAR_LIST_MAIN"])
         for var in self.var_pams["VAR_LIST_MAIN"]:
+            if var in self.help_variables:
+                continue
             if var in outd.keys():
                 logscale = False
                 if "LOG_PLOT" in self.var_pams and var in self.var_pams["LOG_PLOT"]:
                     logscale = True
-                to_plot = regrid_se_data(self.regridder, outd[var])
+                to_plot, landmask = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"], landmask=outd["landmask"])
                 if var in self.var_pams["3D_vars"]:
                     make_3D_plot(
                         bias = to_plot,
                         figname=f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_{year_range[0]:04d}-{year_range[-1]:04d}", 
                         )
                     make_bias_plot(
-                        to_plot.sum(dim=list(self.var_pams["3D_vars"][var])),
+                        to_plot.sum(dim=list(self.var_pams["3D_vars"][var]))*landmask,
                         f"{self.outdir}/clim_maps/{plottype}/{self.casename}_{plottype}_{var}_sum_{year_range[0]:04d}-{year_range[-1]:04d}",
                         xlabel = f"{plottype} {var} [{self.unit_dict[var]}]"
                     )
@@ -486,8 +496,12 @@ class XesmfCLMFatesDiagnostics:
         #print("Now sorted")
         #print(sorted(varlist, key=str.casefold))
         #sys.exit(4)
-        area_regr = regrid_se_data(self.regridder, outd["area"])
+        area_regr = regrid_se_data(self.regridder, outd["area"], lndfrac=outd["landfrac"])
+        if isinstance(area_regr, tuple):
+            area_regr = area_regr[0]
         landfrac_regr = regrid_se_data(self.regridder, outd["landfrac"])
+        if isinstance(landfrac_regr, tuple):
+            landfrac_regr = landfrac_regr[0]
         for varnum, var in enumerate(sorted(varlist,  key=str.casefold)):
             if ilamb_cfgs is None:
                 unit_conversion_factor = 1
@@ -495,7 +509,8 @@ class XesmfCLMFatesDiagnostics:
             else: 
                 unit_conversion_factor, unit_to_print = get_unit_conversion_from_string(ilamb_cfgs.get_variable_plot_unit(var), self.unit_dict[var])
             shift, ylabel = get_unit_conversion_and_new_label(unit_to_print)
-            outd_regr = unit_conversion_factor * regrid_se_data(self.regridder, outd[var])
+            outd_regr, landmask_regr = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"], landmask=outd["landmask"])
+            outd_regr = unit_conversion_factor * outd_regr
             for region, region_info in region_df.iterrows():
                 if rownum < 2:
                     axnow = figs[region][1][varnum % 2]
@@ -550,6 +565,8 @@ class XesmfCLMFatesDiagnostics:
                 }
             )
         outd = self.get_monthly_climatology_data(year_range=year_range, varlist=varlist)
+        print(varsetname)
+        print(varlist)
         self.make_timeseries_plots_for_varlist(
             outd,
             varlist=varlist,
@@ -626,8 +643,9 @@ class XesmfCLMFatesDiagnostics:
     def get_year_ranges_for_comparison(self, other, year_range_in=None):
         year_range_avail = self.get_year_range(get_full_range=True)
         year_range_other_avail = other.get_year_range(get_full_range=True)
+        print(year_range_in)
         if year_range_in is None:
-            year_range = {"compare_from_end":20}
+            year_range_in = {"compare_from_end":20}
         if "year_range" in year_range_in:
             year_range = year_range_in["year_range"]
             if "year_range_other" in year_range_in:
@@ -688,8 +706,8 @@ class XesmfCLMFatesDiagnostics:
                 layout = 'constrained'
             )
             # Regridding block
-            to_plot = regrid_se_data(self.regridder, outd[var]) * unit_conversion_factor
-            to_plot_other = regrid_se_data(other.regridder, outd_other[var]) * unit_conversion_factor
+            to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"])[0] * unit_conversion_factor
+            to_plot_other = regrid_se_data(other.regridder, outd_other[var])[0] * unit_conversion_factor
             if regridder_between is not None:
                 if regrid_self_to_other:
                     to_plot = regridder_between(to_plot)
@@ -734,8 +752,6 @@ class XesmfCLMFatesDiagnostics:
                 f"{self.casename} - {other.casename}",
                 ax=axs[2], 
                 cmap = "PuOr_r",
-                yminv = negdiffrange,
-                ymaxv = diffrange,
             )
             rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_other)
             fig.suptitle(f"{season_name} {var} ({self.unit_dict[var]}) (years {year_range_str})", size = "xx-large", y=0.8)
@@ -806,6 +822,7 @@ class XesmfCLMFatesDiagnostics:
                 print(f"No observational and input data match for {var}, skipping")
         for var in to_remove:
             variables.remove(var)
+        varlist.append("landfrac")
         return varlist, variables
 
     def make_obs_comparisonplots(
@@ -820,6 +837,8 @@ class XesmfCLMFatesDiagnostics:
 
         variables = list(variables_obs_list.keys())
         varlist, variables = self.make_alternate_varlist(ilamb_cfgs, variables)
+        print(varlist)
+        #sys.exit(4)
         self.add_to_unit_dict(varlist)
         self.add_to_unit_dict(variables)
         if year_range_in is None:
@@ -858,9 +877,13 @@ class XesmfCLMFatesDiagnostics:
                     subplot_kw={"projection": ccrs.Robinson()},
                     layout = 'constrained'
                 )
-                to_plot = unit_conversion_factor * regrid_se_data(self.regridder, outd[varname_mod])
-                
+                to_plot, landmask = regrid_se_data(self.regridder, outd[varname_mod], lndfrac=outd["landfrac"], landmask=outd["landmask"])
+                to_plot = unit_conversion_factor * to_plot 
+                to_plot_obs = to_plot_obs * landmask
 
+                print(to_plot)
+                print(outd[varname_mod])
+                print(varname_mod)
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
                 make_bias_plot(
                     to_plot,

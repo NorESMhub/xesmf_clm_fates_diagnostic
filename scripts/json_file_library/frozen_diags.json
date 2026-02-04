@@ -1,0 +1,43 @@
+{
+    "VAR_LIST_MAIN" : [
+	"RAIN","SNOW","TBOT","QBOT","FSDS","WIND",
+	"TSOI","CONC_O2_SAT","SOILICE","H2OSOI",
+        "FATES_GPP","HR","TOTSOMC_1m","TOTSOMC","SOILC_vr","HR_vr",
+	"EFLX_LH_TOT","BTRAN","FSNO","FSNO_EFF","H2OSNO","SOILLIQ"
+    ],
+
+    "SEASONAL_VARSETS": {
+	"soil physics": [ "TSOI","CONC_O2_SAT","SOILICE","H2OSOI","SOILC_vr","HR_vr"],
+	"drivers":["RAIN","SNOW","TBOT","QBOT","FSDS","WIND"],
+	"carbon":["FATES_GPP","HR","TOTSOMC_1m"],
+	"hydrology":["EFLX_LH_TOT","BTRAN","FSNO","FSNO_EFF","H2OSNO"]
+    },
+
+    "COMPARE_VARIABLES" : ["BTRAN","RAIN","SNOW","TBOT","QBOT","FSDS","WIND",
+			   "EFLX_LH_TOT","BTRAN","FSNO",
+			  "FATES_GPP","HR","TOTSOMC_1m"],
+    
+
+    "OBSERVATION_COMPARISON" : {
+        "hfss": ["FLUXCOM","WECANN","CLASS"],
+        "hfls": ["FLUXCOM","WECANN","CLASS","DOLCE"],
+        "lai": ["MODIS", "AVHRR"],
+        "TOTSOMC_1m": ["HWSD_M", "NCSCDV22"],        
+        "FATES_GPP": ["FLUXCOM","WECANN"],
+        "H2OSNO": ["CanSISE"],
+        "TSA": ["CRU4.07-1900"],
+        "FATES_VEGC": ["XuSaatchi2021", "Thurner", "NBCD2000", "Tropical","ESACCI"],
+        "RAIN": ["CMAPv1904"],
+	"FATES_BURNFRAC": ["GFED4.1S","GFED5"],
+        "SNOW": ["CMAPv1904"],
+        "rsus": ["CERESed4.2", "GEWEX.SRB"],
+        "fsns": ["CERESed4.2", "GEWEX.SRB"],
+        "rsns": ["CERESed4.2", "GEWEX.SRB"],
+	"runoff": ["LORA","CLASS"],
+        "FSDS": ["CERESed4.2", "GEWEX.SRB"]
+
+    },
+    "LOG_PLOT" : [
+        "DSTFLXT","FATES_LEAFC_PF"
+    ]
+}

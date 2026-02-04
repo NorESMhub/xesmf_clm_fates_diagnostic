@@ -78,7 +78,7 @@ def convert_weird_subunits(unit):
         new_unit = unit.replace("%month", "y")
         return new_unit, 100 /12.
     elif "%month" in unit:
-        new_unit = unit.replace("%month", "d")
+        new_unit = unit.replace("%month", "y")
         return new_unit, 12 / 100.
     return unit, 1
 
