@@ -80,6 +80,12 @@ def convert_weird_subunits(unit):
     elif "%month" in unit:
         new_unit = unit.replace("%month", "y")
         return new_unit, 12 / 100.
+    elif "month-1" in unit:
+        new_unit = unit.replace("month-1", "y-1")
+        return new_unit, 1./12.
+    elif "month" in unit:
+        new_unit = unit.replace("month", "y")
+        return new_unit, 12.
     return unit, 1
 
 def deal_with_weird_units_to_and_from(unit_from, unit_to):
@@ -179,7 +185,7 @@ def calculate_rmse_from_bias(bias, weights = None):
     if weights is None:
         weights = np.cos(np.deg2rad(bias.lat))
     weighted = bias_square.weighted(weights)
-    rmse = np.sqrt(weighted.mean(["lon", "lat"]).values)
+    rmse = np.sqrt(weighted.mean(["lon", "lat"], skipna=True).values)
     weighted = bias.weighted(weights)
-    bias_gm = weighted.mean(["lon", "lat"]).values
+    bias_gm = weighted.mean(["lon", "lat"], skipna=True).values
     return rmse, bias_gm
