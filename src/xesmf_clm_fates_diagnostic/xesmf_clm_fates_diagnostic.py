@@ -706,8 +706,17 @@ class XesmfCLMFatesDiagnostics:
                 layout = 'constrained'
             )
             # Regridding block
-            to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"])[0] * unit_conversion_factor
-            to_plot_other = regrid_se_data(other.regridder, outd_other[var])[0] * unit_conversion_factor
+         
+            if self.regridder is None:
+                to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"]) * unit_conversion_factor
+            else:
+                to_plot = regrid_se_data(self.regridder, outd[var], lndfrac=outd["landfrac"])[0] * unit_conversion_factor
+            
+            if self.regridder is None:
+                to_plot_other = regrid_se_data(other.regridder, outd_other[var]) * unit_conversion_factor
+            else:
+                to_plot_other = regrid_se_data(other.regridder, outd_other[var])[0] * unit_conversion_factor
+
             if regridder_between is not None:
                 if regrid_self_to_other:
                     to_plot = regridder_between(to_plot)
