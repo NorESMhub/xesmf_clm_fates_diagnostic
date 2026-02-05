@@ -193,7 +193,7 @@ def regrid_se_data(regridder, data_to_regrid, lndfrac=None, landmask=None):
     if regridder is None:
         if landmask is not None:
             return data_to_regrid*landmask, landmask
-        return data_to_regrid
+        return data_to_regrid, None
     #print(data_to_regrid.dims)
     if isinstance(data_to_regrid, xr.DataArray):
         #print(type(data_to_regrid))
