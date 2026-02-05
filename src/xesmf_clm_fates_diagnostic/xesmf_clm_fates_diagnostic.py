@@ -914,7 +914,8 @@ class XesmfCLMFatesDiagnostics:
                 #rmse, bias = calculate_rmse_from_bias(to_plot - to_plot_obs)
                 test = calculate_rmse_from_bias(to_plot - to_plot_obs)
                 rmse, bias = test
-                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse:.2f}, Mean bias = {bias:.2f}", size = "xx-large", y=0.8)
+                print(rmse, bias)
+                fig.suptitle(f"{season_name} {varname_mod} ({unit_to_print}) (years {year_range_str}), RMSE = {rmse:.2e}, Mean bias = {bias:.2e}", size = "xx-large", y=0.8)
                 fig.savefig(
                     f"{fig_dir}/{self.casename}_compare_{varname_mod}_{obs_dataset}_{season_name}_{year_range_str}.png"
                 )

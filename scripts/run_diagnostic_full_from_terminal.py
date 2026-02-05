@@ -122,7 +122,7 @@ if len(glob.glob(f"{run_path}*.nc")) < 1:
     print_help_message()
 
 ilamb_cfg = ilamb_configurations.IlambConfigurations("../tests/test-data/ilamb_CLMFATES.cfg")
-#print(ilamb_cfg.configurations["FATES_VEGC"].obsdatasets)
+print(ilamb_cfg.configurations["FATES_FIRE_CLOSS"].obsdatasets)
 #print(ilamb_cfg.configurations["pr"].obsdatasets)
 
 #sys.exit(4)
