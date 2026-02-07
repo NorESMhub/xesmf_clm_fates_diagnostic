@@ -1,0 +1,87 @@
+{
+    "VAR_LIST_MAIN" : [
+        "MEG_isoprene",
+        "MEG_pinene_a",
+        "MEG_carene_3",
+        "MEG_thujene_a",
+        "MEG_methanol",
+        "MEG_ethanol",
+        "MEG_acetic_acid",
+        "MEG_acetaldehyde",
+        "MEG_formaldehyde",
+        "TSA", 
+        "TSKIN", 
+        "U10", 
+        "FSDS",
+        "RH2M", 
+        "Q2M", 
+        "PBOT", 
+        "RAIN",
+        "SNOW",
+        "FATES_LAI",
+        "TLAI",
+        "TSOI_10CM",
+        "H2OSOI",
+        "FATES_GPP",
+        "FATES_STOMATAL_COND"
+    ],
+    "SEASONAL_VARSETS":
+    {
+        "BVOC emissions (main)": [
+            "MEG_isoprene",
+            "MEG_pinene_a",
+            "MEG_carene_3",
+            "MEG_thujene_a"
+        ],
+        "BVOC emissions (secondary)": [
+            "MEG_methanol",
+            "MEG_ethanol",
+            "MEG_acetic_acid",
+            "MEG_acetaldehyde",
+            "MEG_formaldehyde"
+        ],
+        "atm-drivers": [
+            "TSA", 
+            "TSKIN", 
+            "U10", 
+            "FSDS",
+            "RH2M", 
+            "Q2M", 
+            "PBOT", 
+            "RAIN",
+            "SNOW"
+        ],
+        "land-drivers":[
+            "FATES_LAI",
+            "TLAI",
+            "TSOI_10CM",
+            "H2OSOI",
+            "FATES_GPP",
+            "FATES_STOMATAL_COND"
+        ]
+    },
+    
+    "COMPARE_VARIABLES" : [
+            "MEG_isoprene",
+            "MEG_pinene_a",
+            "MEG_carene_3",
+            "MEG_thujene_a",
+            "TSA", 
+            "TSKIN", 
+            "U10", 
+            "RH2M", 
+            "Q2M", 
+            "PBOT", 
+            "RAIN",
+            "SNOW",
+            "FATES_LAI",
+            "TLAI",
+            "TSOI_10CM",
+            "FATES_GPP",
+            "FATES_STOMATAL_COND"
+        ],
+
+"OBSERVATION_COMPARISON" : {
+        "MEG_isoprene": ["CrIS"]
+}
+}
