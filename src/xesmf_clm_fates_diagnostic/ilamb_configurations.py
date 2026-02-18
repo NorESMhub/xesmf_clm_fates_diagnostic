@@ -183,10 +183,13 @@ class IlambConfigurations:
             print(f"{varname} has missing with value {dataset[varname].attrs["missing"]}")
         outd_gn = outd_gn.where(outd_gn < 1e9)
         regridder = make_regular_grid_regridder(outd_gn, regrid_target)
-        output = regridder(outd_gn)
-        regridder.grid_in.destroy()
-        regridder.grid_out.destroy()
-        del regridder
+        if not regridder is None:
+            output = regridder(outd_gn)
+            regridder.grid_in.destroy()
+            regridder.grid_out.destroy()
+            del regridder
+        else:
+            output = outd_gn
         print(f"Dataset {oname} has conversion factor {self.configurations[variable].obsdatasets[oname]["conv_factor"]} for variable {variable}")
         return output * self.configurations[variable].obsdatasets[oname]["conv_factor"]
         
