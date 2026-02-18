@@ -231,9 +231,11 @@ def make_regular_grid_regridder(regrid_start, regrid_target, method= "bilinear")
     #print(regrid_start)
     lat_min = np.argmin(np.abs((regrid_target["lat"].values - regrid_start["lat"].values.min())))
     lat_max = np.argmin(np.abs(regrid_target["lat"].values - regrid_start["lat"].values.max()))
-    regrid_target = regrid_target.isel(lat=slice(lat_min, lat_max))
+    regrid_target = regrid_target.isel(lat=slice(lat_min, lat_max +1))
     #print(f"lat_min {lat_min}, lat_max: {lat_max}")# lon_min: {lon_min}, lon_max: {lon_max}")
-
+    if len(regrid_target["lat"].values) == len(regrid_start["lat"].values) and len(regrid_target["lon"].values) == len(regrid_start["lon"].values):
+        if np.allclose(regrid_start["lat"].values, regrid_target["lat"].values) and np.allclose(regrid_start["lon"].values, regrid_target["lon"].values):
+            return None
     #print(regrid_target)
     return xesmf.Regridder(
         regrid_start,
