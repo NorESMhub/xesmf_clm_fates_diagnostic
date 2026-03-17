@@ -12,7 +12,7 @@ diagnostic = XesmfCLMFatesDiagnostics(
     "/nird/datalake/NS9560K//noresm3/cases/n1850.ne30_tn14.hybrid_fatessp.202401007/lnd/hist/",
     standard_weight,
     "short_pams.json",
-    region_def="/projects/NS9560K/diagnostics/noresm/packages/CLM_DIAG/code/resources/region_definitions.nc",
+    region_def="/nird/datalake/NS16000B/noresm-diagnostics-src/packages/CLM_DIAG/code/resources/region_definitions.nc",
 )
 
 print(diagnostic.find_case_year_range())
