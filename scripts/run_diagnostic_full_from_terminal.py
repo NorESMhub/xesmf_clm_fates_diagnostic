@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../", "src"))
 from xesmf_clm_fates_diagnostic import XesmfCLMFatesDiagnostics, ilamb_configurations
 
 standard_run_dict = {
-    "weight" : "/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
+    "weight" : "/nird/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc",
     "outpath" : "figs/",
     "pamfile" : f"{os.path.dirname(__file__)}/short_pams.json",
     "compare": None,
