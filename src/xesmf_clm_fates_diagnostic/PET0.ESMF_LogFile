@@ -1,0 +1,19 @@
+20260311 095216.803 ERROR            PET0 ESMCI_Array.C:2970 ESMCI::sparseMatMulStoreLinSeqVe Internal error: Bad condition  - Caught exception
+20260311 095216.804 ERROR            PET0 ESMCI_Array.C:9466 ESMCI::Array::tSparseMatMulStore Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_Array.C:8909 ESMCI::Array::sparseMatMulStore( Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_Array_F.C:1109 c_esmc_arraysmmstoreind4() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_Mesh_Regrid_Glue.C:657 ESMCI_regrid_create() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_Mesh_Regrid_Glue.C:839 ESMCI_regrid_create() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_MeshCap.C:1681 MeshCap::regrid_create() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMF_Regrid.F90:384 ESMF_RegridStore Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMF_FieldRegrid.F90:1302 ESMF_FieldRegridStoreNX Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMF_Field_C.F90:1157 f_esmf_regridstore Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMCI_Field.C:1472 ESMCI::Field::regridstore() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095218.165 ERROR            PET0 ESMC_Field.C:473 ESMC_FieldRegridStore() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMCI_Mesh_Regrid_Glue.C:829 ESMCI_regrid_create() Internal error: Bad condition  - std::bad_alloc
+20260311 095710.723 ERROR            PET0 ESMCI_MeshCap.C:1681 MeshCap::regrid_create() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMF_Regrid.F90:384 ESMF_RegridStore Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMF_FieldRegrid.F90:1302 ESMF_FieldRegridStoreNX Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMF_Field_C.F90:1157 f_esmf_regridstore Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMCI_Field.C:1472 ESMCI::Field::regridstore() Internal error: Bad condition  - Internal subroutine call returned Error
+20260311 095710.723 ERROR            PET0 ESMC_Field.C:473 ESMC_FieldRegridStore() Internal error: Bad condition  - Internal subroutine call returned Error
