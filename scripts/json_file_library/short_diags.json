@@ -61,6 +61,20 @@
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
         "FSDS": ["CERESed4.2", "GEWEX.SRB"]
     },
-    "LOG_PLOT" : []
+    "LOG_PLOT" : [],
+
+    "COMPARE_COLOR_LIMITS": {
+        "FATES_VEGC": {
+            "ymin": 0,
+            "ymax": 40,
+            "diff_min": -3,
+            "diff_max": 3},
+        "FCO2": {
+            "ymin": -2e-8,
+            "ymax": 3e-8,
+            "diff_min": -2e-8,
+            "diff_max": 2e-8
+        }
+    }
 }
 

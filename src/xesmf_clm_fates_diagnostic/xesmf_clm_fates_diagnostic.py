@@ -785,18 +785,47 @@ class XesmfCLMFatesDiagnostics:
                     to_plot = regridder_between(to_plot)
                 else:
                     to_plot_other = regridder_between(to_plot_other)
-            if ilamb_cfgs is None:
-                ymaxv = np.max((to_plot.max(), to_plot_other.max()))
-                yminv = np.max((to_plot.min(), to_plot_other.min()))
-                diffrange = None
-                negdiffrange = None
-            elif var in ilamb_cfgs.configurations:
-                 yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
-            else:
-                ymaxv = np.max((to_plot.max(), to_plot_other.max()))
-                yminv = np.max((to_plot.min(), to_plot_other.min()))
-                diffrange = None
-                negdiffrange = None                
+
+            ymaxv = float(np.nanmax(np.array([to_plot.max().item(), to_plot_other.max().item()])))
+            yminv = float(np.nanmin(np.array([to_plot.min().item(), to_plot_other.min().item()])))
+
+            diff_data = to_plot - to_plot_other
+            diff_abs = float(np.nanmax(np.abs(diff_data).values))
+            diffrange = diff_abs
+            negdiffrange = -diff_abs
+
+            if ilamb_cfgs is not None and var in ilamb_cfgs.configurations:
+                yminv, ymaxv, diffrange, negdiffrange = ilamb_cfgs.configurations[var].obs_limits
+
+            # Optional JSON override per comparison variable.
+            # Example:
+            # "COMPARE_COLOR_LIMITS": {
+            #   "FATES_VEGC": {"ymin": 0, "ymax": 40, "diff_min": -10, "diff_max": 10}
+            # }
+            limit_cfg_all = self.var_pams.get("COMPARE_COLOR_LIMITS", {})
+            if isinstance(limit_cfg_all, dict) and var in limit_cfg_all:
+                limit_cfg = limit_cfg_all[var]
+                if isinstance(limit_cfg, list):
+                    if len(limit_cfg) >= 2:
+                        yminv = limit_cfg[0]
+                        ymaxv = limit_cfg[1]
+                    if len(limit_cfg) >= 4:
+                        negdiffrange = limit_cfg[2]
+                        diffrange = limit_cfg[3]
+                elif isinstance(limit_cfg, dict):
+                    if "ymin" in limit_cfg:
+                        yminv = limit_cfg["ymin"]
+                    if "ymax" in limit_cfg:
+                        ymaxv = limit_cfg["ymax"]
+                    if "diff_min" in limit_cfg:
+                        negdiffrange = limit_cfg["diff_min"]
+                    if "diff_max" in limit_cfg:
+                        diffrange = limit_cfg["diff_max"]
+                    if "diff_abs_max" in limit_cfg:
+                        diff_abs = abs(limit_cfg["diff_abs_max"])
+                        negdiffrange = -diff_abs
+                        diffrange = diff_abs
+
             if year_range[0] == year_range_other[0] and year_range[-1] == year_range_other[-1]:
                 year_range_str = f"{year_range[0]:04d}-{year_range[-1]:04d}"
             else:
@@ -824,7 +853,9 @@ class XesmfCLMFatesDiagnostics:
             make_bias_plot(
                 to_plot - to_plot_other,
                 f"{self.casename} - {other.casename}",
-                ax=axs[2], 
+                yminv = negdiffrange,
+                ymaxv = diffrange,
+                ax=axs[2],
                 cmap = "PuOr_r",
                 figtitle = f"{self.plot_annotation_name} - {other.plot_annotation_name}",
             )
