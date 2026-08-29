@@ -107,6 +107,8 @@ class IlambConfigurations:
         if variable in dataset_keys:
             return variable
         if variable in self.configurations:
+            print(variable)
+            print(self.configurations[variable].alt_names)
             for alt_name in self.configurations[variable].alt_names:
                 if alt_name in dataset_keys:
                     return alt_name
