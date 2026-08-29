@@ -56,7 +56,6 @@ def read_ilamb_configurations(cfg_file):
     curr_oname = None
     with open(cfg_file, "r") as cfile:
         for line in cfile:
-            #print(line)
             if line.startswith("variable"):
                 if curr_var is not None:
                     ilamb_cfgs[curr_var.name] = curr_var

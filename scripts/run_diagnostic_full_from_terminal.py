@@ -161,7 +161,7 @@ print(diagnostic.find_case_year_range())
 
 
 #sys.exit(4)
-diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
+#diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
 #sys.exit(4)
 
 if not run_dict["compare"] is None:
