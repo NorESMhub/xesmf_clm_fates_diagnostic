@@ -28,6 +28,7 @@
 	"FATES_NPP",
 	"QBOT",
 	"WIND",
+         "FATES_MEAN_95PCTILE_HEIGHT",
 	"FATES_AREA_PLANTS"
 	
     ],
@@ -42,7 +43,7 @@
         [ "FATES_GPP", "FATES_NPP","FATES_AUTORESP","HR","FATES_HARVEST_WOODPROD_CFLUX","FATES_GRAZING"]
    },
     
-    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","FATES_VEGC","WIND","FATES_BURNFRAC","FCO2","MEG_isoprene","TOTSOMC_1m","FATES_VEGC","FATES_NPP"],
+    "COMPARE_VARIABLES" : ["TSA", "RAIN", "SNOW", "FSR", "FSDS","FATES_GPP","EFLX_LH_TOT","FATES_LAI","FSR","FATES_VEGC","WIND","FATES_BURNFRAC","FCO2","MEG_isoprene","TOTSOMC_1m","FATES_VEGC","FATES_NPP","FATES_MEAN_95PCTILE_HEIGHT"],
 
     "OBSERVATION_COMPARISON" : {
         "hfss": ["FLUXCOM","WECANN","CLASS"],
@@ -56,6 +57,7 @@
         "TSA": ["CRU4.07", "CRU4.07-1900"],
         "RAIN": ["CMAPv1904"],
         "SNOW": ["CMAPv1904"],
+        "FATES_MEAN_95PCTILE_HEIGHT": ["GEDI","ECHOSAT"],
         "FATES_VEGC": ["XuSaatchi2021", "Thurner", "NBCD2000", "Tropical","ESACCI"],	
         "rsus": ["CERESed4.2", "GEWEX.SRB"],
         "fsns": ["CERESed4.2", "GEWEX.SRB"],        
