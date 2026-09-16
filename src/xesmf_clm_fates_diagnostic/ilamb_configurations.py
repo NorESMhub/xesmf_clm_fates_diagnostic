@@ -86,7 +86,7 @@ def read_ilamb_configurations(cfg_file):
 
 class IlambConfigurations:
 
-    def __init__(self, cfg_file, ilamb_data_dir="/datalake/NS9560K/diagnostics/ILAMB-Data/"):
+    def __init__(self, cfg_file, ilamb_data_dir="/nird/datalake/NS9560K/diagnostics/ILAMB-Data/"):
         self.data_root = ilamb_data_dir
         if isinstance(cfg_file, dict):
             self.configurations = cfg_file

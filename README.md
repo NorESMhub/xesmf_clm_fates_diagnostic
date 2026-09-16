@@ -30,12 +30,12 @@ where `path_1` is the path to the lnd/hist folder containing your output.
 
 The other arguments are optional:
 
-`weight_path` is a path to a weight-file if the standard one is not to be used. Standard weight-file is for ne30 spectral element resolution. On nird, this file is used `/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc` and a premade weight-file for ne16 grid output is here: `/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne16pg3_to_1.9x2.5_nomask_scripgrids_c250425.nc` For regular lat, lon runs, the weight-file is not used, and hence you can send a dumy argument, use the standard, or if not working on nird, the tool will try to add a dummy and run without if you don't send a weight_path.
+`weight_path` is a path to a weight-file if the standard one is not to be used. Standard weight-file is for ne30 spectral element resolution. On nird, this file is used `/nird/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne30pg3_to_0.5x0.5_nomask_aave_da_c180515.nc` and a premade weight-file for ne16 grid output is here: `/nird/datalake/NS9560K/diagnostics/land_xesmf_diag_data/map_ne16pg3_to_1.9x2.5_nomask_scripgrids_c250425.nc` For regular lat, lon runs, the weight-file is not used, and hence you can send a dumy argument, use the standard, or if not working on nird, the tool will try to add a dummy and run without if you don't send a weight_path.
 
 `opt_path_2` is a path to output from a run you wish to compare to 
 
 `outpath` is the path of where you want the output diagnostic figures filetree to go. If not sent the figures will be expected to go in a folder called figs situated in whatever directory you ran the command from.
-If you want this to be viewable by web, choose a web-facing directory. For instance if you have access to the NS9560K account, make a subdirectory with the same name as your username in /datalake/NS9560K/www/diagnostics/noresm/ and make that your outpath, i.e. `outpath=/datalake/NS9560K/www/diagnostics/noresm/username`
+If you want this to be viewable by web, choose a web-facing directory. For instance if you have access to the NS9560K account, make a subdirectory with the same name as your username in /datalake/NS9560K/www/diagnostics/noresm/ and make that your outpath, i.e. `outpath=/nird/datalake/NS9560K/www/diagnostics/noresm/username`
 
 `pamfile_path` is the path to a parameterfile in which you can specify which variables to plot in the various plots. 
 This file should be a json-file containing the three (four) keyword arguments:
