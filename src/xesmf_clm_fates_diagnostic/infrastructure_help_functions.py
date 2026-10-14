@@ -61,6 +61,11 @@ def read_pam_file(pam_file_path):
                 raise ValueError(f"{pam_file_path} must include {elem}")
         if not isinstance(data[elem], e_type):
             raise TypeError(f"{pam_file_path} element {elem} must be a {e_type}, but is {type(data[elem])}")
+    
+    optional = {"COMPARE_COLOR_LIMITS": dict}
+    for elem_opt, e_type_opt in optional.items():
+        if elem_opt in data and not isinstance(data[elem_opt], e_type_opt):
+            raise TypeError(f"{pam_file_path} optional element {elem_opt} must be a {e_type_opt}, but is {type(data[elem_opt])}")
     return data
     
 
