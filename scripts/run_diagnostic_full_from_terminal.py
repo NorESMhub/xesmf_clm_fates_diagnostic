@@ -160,16 +160,13 @@ print("Standard diagnostics:")
 print(diagnostic.find_case_year_range())
 
 
-#sys.exit(4)
-diagnostic.make_all_plots_and_tables(ilamb_cfgs = ilamb_cfg, mute_trend=run_dict["mute_trend"], mute_maps=run_dict["mute_maps"])
-#sys.exit(4)
-
-if not run_dict["compare"] is None:
+diagnostic_other = None
+if run_dict["compare"] is not None:
     print(f"Comparison diagnostics with {run_dict['compare']}")
     if run_dict["compare_weight"] is None:
         run_dict["compare_weight"] = run_dict["weight"]
 
-    diasgnostic_other = XesmfCLMFatesDiagnostics(
+    diagnostic_other = XesmfCLMFatesDiagnostics(
         # "/cluster/projects/nn9560k/mvertens/cases/n1850.ne30_tn14.hybrid_fatessp.202401007",
         # "/projects/NS9188K/NORESM_INTERIM_TEMP/temp_spinup_out/1850_fates_spinup/",
         run_dict['compare'],
@@ -179,12 +176,20 @@ if not run_dict["compare"] is None:
         plot_annotation_name = run_dict["fig_title_compare"],
     )
 
-    diagnostic.make_combined_changeplots(diasgnostic_other, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
+diagnostic.make_all_plots_and_tables(
+    ilamb_cfgs=ilamb_cfg,
+    mute_trend=run_dict["mute_trend"],
+    mute_maps=run_dict["mute_maps"],
+    other=diagnostic_other,
+)
+
+if diagnostic_other is not None:
+    diagnostic.make_combined_changeplots(diagnostic_other, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
     if run_dict["compare_seasonal"]:
         print("Seasons true")
         for season in range(4):
             print(f"Comparison statistics with {season}")
-            diagnostic.make_combined_changeplots(diasgnostic_other, season=season, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
+            diagnostic.make_combined_changeplots(diagnostic_other, season=season, year_range_in=run_dict["year_range_compare"], ilamb_cfgs = ilamb_cfg)
 
 if diagnostic.var_pams["OBSERVATION_COMPARISON"] is not None:
     print("Doing observational comparisons")

@@ -520,14 +520,17 @@ class XesmfCLMFatesDiagnostics:
                 outd_months = xr.concat([outd_months, outd], dim="time")
         return outd_months
 
-    def make_all_plots_and_tables(self, year_range=None, ilamb_cfgs = None, mute_trend=False, mute_maps=False):
+    def make_all_plots_and_tables(
+        self, year_range=None, ilamb_cfgs=None, mute_trend=False, mute_maps=False, other=None
+    ):
         # TODO: Handle different year_range
         if year_range is None:
             year_range = self.get_year_range()
-            year_range_full  = self.find_case_year_range()
-            year_range_full = np.arange(year_range_full[0], year_range_full[1])
+            year_range_full = self.get_year_range(get_full_range=True)
+        else:
+            year_range_full = year_range
         if not mute_trend:
-            self.make_global_yearly_trends(year_range=year_range_full)
+            self.make_global_yearly_trends(year_range=year_range_full, other=other)
         if not mute_maps:
             outd = self.get_annual_data(year_range)
 
@@ -651,59 +654,83 @@ class XesmfCLMFatesDiagnostics:
 
         # Add observations
 
-    def make_global_yearly_trends(self, varlist = None, year_range = None):
+    def make_global_yearly_trends(self, varlist=None, year_range=None, other=None):
         if varlist is None:
             varlist = self.var_pams["VAR_LIST_MAIN"]
-        if year_range is not None:
-            yr_start = year_range[0]
-            yr_end = year_range[1]
-            missing = False
+        if year_range is None:
+            year_range = self.get_year_range(get_full_range=True)
         else:
-            yr_start, yr_end, missing = self.find_case_year_range()
-            year_range =np.arange(yr_start, yr_end + 1)
-        if yr_end == yr_start:
+            year_range = np.asarray(year_range)
+        if len(year_range) == 1:
             print("Can not make global annual trend plots from just one year of data")
             return
-        self.add_to_unit_dict(varlist)
-        ts_data = np.zeros((len(varlist), len(year_range)))
-        weights = None
-        varlist_short = [v for v in varlist if v not in self.help_variables]
-        if not missing:
-            outd = self.get_annual_mean_ts(year_range, varlist=varlist)
-            for varnum, var in enumerate(sorted(varlist_short, key=str.casefold)):
 
-                #outd_regr = regrid_se_data(self.regridder, outd[var])
-                #if weights is None:
-                #    weights 
-                    #weights = np.cos(np.deg2rad(outd_regr.lat))
-                weights = outd["area"]*outd["landfrac"]
-                weighted = outd[var].weighted(weights.fillna(0))
-                if "lat" in outd.dims and len(outd[var].values.shape) > 3:
-                    ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values[:,0]
-                elif "lat" in outd.dims: 
-                    ts_data[varnum, :] = weighted.mean(["lon", "lat"]).values
-                elif "lndgrid" in outd.dims and len(outd[var].values.shape) > 2:
-                    ts_data[varnum, :] = weighted.mean(["lndgrid"]).values[:,0]
-                else:
-                    ts_data[varnum, :] = weighted.mean(["lndgrid"]).values                    
+        trend_variables = [var for var in varlist if var not in self.help_variables]
+        runs = [(self, year_range)]
+        if other is not None:
+            trend_variables = [
+                var for var in trend_variables
+                if var in other.var_pams["VAR_LIST_MAIN"] and var not in other.help_variables
+            ]
+            other_year_range = other.get_year_range(get_full_range=True)
+            runs.append((other, other_year_range))
+        if not trend_variables:
+            print("No common variables available for global annual trend plots")
+            return
+
+        for diagnostic, _ in runs:
+            diagnostic.add_to_unit_dict(trend_variables)
+
+        ts_data = {}
+        for diagnostic, run_year_range in runs:
+            annual_data = diagnostic.get_annual_mean_ts(run_year_range, varlist=trend_variables)
+            weights = annual_data["area"] * annual_data["landfrac"]
+            ts_data[diagnostic] = {}
+            for var in trend_variables:
+                data = annual_data[var]
+                weighted = data.weighted(weights.fillna(0))
+                spatial_dims = [dim for dim in ("lon", "lat", "lndgrid") if dim in data.dims]
+                mean = weighted.mean(spatial_dims)
+                values = np.asarray(mean.values).reshape(len(run_year_range), -1)[:, 0]
+                ts_data[diagnostic][var] = values
+
+        yr_start = year_range[0]
+        yr_end = year_range[-1]
+        if other is not None:
+            filename_years = (
+                f"{yr_start}-{yr_end}_vs_"
+                f"{runs[1][1][0]}-{runs[1][1][-1]}"
+            )
+        else:
+            filename_years = f"{yr_start}-{yr_end}"
+
         fig_count = 0
         fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
         #fig.suptitle("Global annual trends")
-        for varnum, var in enumerate(sorted(varlist_short,key=str.casefold)):
+        for varnum, var in enumerate(sorted(trend_variables, key=str.casefold)):
             if varnum%25 == 0 and varnum > 0:
                 fig.tight_layout()
-                fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+                fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{filename_years}.png")
                 plt.clf()
                 fig, axs = plt.subplots(ncols = 5, nrows= 5, figsize=(30,30))
                 fig_count = fig_count + 1
             # TODO: Make this more general to handle other unit changes
             shift, ylabel = get_unit_conversion_and_new_label(self.unit_dict[var])
-            axs[(varnum%25)//5, (varnum%25)%5].plot(year_range, ts_data[varnum, :]+ shift)
-            axs[(varnum%25)//5, (varnum%25)%5].set_title(var, size=30)
-            axs[(varnum%25)//5, (varnum%25)%5].set_ylabel(ylabel, size=25)
-            axs[(varnum%25)//5, (varnum%25)%5].set_xlabel("Year", size=25)
+            ax = axs[(varnum%25)//5, (varnum%25)%5]
+            for diagnostic, run_year_range in runs:
+                label = diagnostic.plot_annotation_name if other is not None else None
+                ax.plot(
+                    run_year_range,
+                    ts_data[diagnostic][var] + shift,
+                    label=label,
+                )
+            ax.set_title(var, size=30)
+            ax.set_ylabel(ylabel, size=25)
+            ax.set_xlabel("Year", size=25)
+            if other is not None:
+                ax.legend()
         fig.tight_layout()
-        fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{yr_start}-{yr_end}.png")
+        fig.savefig(f"{self.outdir}/trends/{self.casename}_glob_ann_trendplot_num{fig_count}_{filename_years}.png")
         plt.clf()
         return        
         #for year in find_case_year_range(self):
